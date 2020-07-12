@@ -1,6 +1,6 @@
 {
-  "name": "nk-mongo",
-  "version": "1.0.0",
+  "name": "@encke/nk-mongo",
+  "version": "1.0.1",
   "description": "MongoDB Connection Class for the NK Node Package",
   "main": "mongo.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Encke/NK-Mongo.git"
+    "url": "git://github.com/Encke/NK-Mongo.git"
   },
   "author": "Encke Technologies SRL",
   "license": "MIT",
