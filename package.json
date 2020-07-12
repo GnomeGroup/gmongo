@@ -1,6 +1,6 @@
 {
   "name": "@encke/nk-mongo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MongoDB Connection Class for the NK Node Package",
   "main": "mongo.js",
   "scripts": {
@@ -19,5 +19,7 @@
   "dependencies": {
     "mongodb": "^3.5.9"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" }
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }
