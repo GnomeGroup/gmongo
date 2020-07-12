@@ -17,6 +17,7 @@ npm i nk-mongo --save
 const NKMongo = require( 'nk-mongo' )
 //                  dbName,         ip,   port, callback
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, () => {
+  //Insert one or more rows
   //                    dbName, table,      rowOrRows,                                                                        callback
   NKMongo.insert( 'MyDatabase', 'users', { username: 'jose', pass: '123', active: false, added: ( new Date() ).getTime() }, () => console.log( 'all done' ) )
   //                    dbName, table,     dataToRemove,                      callback
