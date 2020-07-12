@@ -1,0 +1,22 @@
+{
+  "name": "nk-mongo",
+  "version": "1.0.0",
+  "description": "MongoDB Connection Class for the NK Node Package",
+  "main": "mongo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Encke/NK-Mongo.git"
+  },
+  "author": "Encke Technologies SRL",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Encke/NK-Mongo/issues"
+  },
+  "homepage": "https://github.com/Encke/NK-Mongo#readme",
+  "dependencies": {
+    "mongodb": "^3.5.9"
+  }
+}
