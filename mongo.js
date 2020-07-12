@@ -13,11 +13,9 @@ const mongoDBJSObject = {
 		if( !err && db )	{
 			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
 			mongoDBJSObject.databaseList[dbName].collection( dbName )
-			if( callback )	{
-				callback()
-			}
+			callback( false, null )
 		}	else	{
-			console.log( 'Database Connection Error: ' + err )
+			callback( true, err )
 		}
 	}),
 	insert: ( dbName, table, rowOrRows, callback ) => {
