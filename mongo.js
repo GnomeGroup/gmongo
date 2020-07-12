@@ -9,7 +9,7 @@ const mongoDBJSObject = {
 	updateList: {},
 	databaseList: {},
 	id: name => objectid( name ),
-	start: ( dbName, ip, port, callback ) => mongo.connect( ( 'mongodb://' + ip + ':' + port + '/' + dbName ), { useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
+	start: ( dbName, ip, port, timeoutInMS, callback ) => mongo.connect( ( 'mongodb://' + ip + ':' + port + '/' + dbName ), { serverSelectionTimeoutMS: parseInt( timeoutInMS ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
 		if( !err && db )	{
 			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
 			mongoDBJSObject.databaseList[dbName].collection( dbName )

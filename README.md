@@ -16,8 +16,8 @@ Mongo is the preferred database format for NodeJS based systems, it supports mul
 ### Start and connect to server
 ```node
 const NKMongo = require( '@encke/nk-mongo' )
-//                  dbName,         ip,   port, callback
-NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, ( isError, errorMessage ) => {
+//                  dbName,         ip,   port, timeoutInMS, callback
+NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, 30000, ( isError, errorMessage ) => {
   //Super duper awesome code here!
   console.log( isError, errorMessage )
 })
@@ -27,7 +27,7 @@ The database connection object is saved in the NKMongo Object, indexed by the da
 ### Start and connect to multiple servers
 ```node
 const NKMongo = require( 'nk-mongo' )
-NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, ( isError3, errorMessage3 ) => {
+NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, 30000, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, 30000, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, 30000, ( isError3, errorMessage3 ) => {
   console.log( isError1, errorMessage1, isError2, errorMessage2, isError3, errorMessage3 )
   //WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances
 })))
