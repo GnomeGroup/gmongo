@@ -6,6 +6,7 @@ MongoDB Connection Class for the NK Node Package
 Install using NPM
 
 ```bash
+echo "registry=https://npm.pkg.github.com/Encke" >> .npmrc
 npm i @encke/nk-mongo --save
 ```
 
