@@ -4,12 +4,13 @@ const objectid	=	require( 'mongodb' ).ObjectID
 const mongoDBJSObject = {
 	db: null,
 	retryTimeout: 100,
+	connectionTimeout: 30000,
 	insertList: {},
 	deleteList: {},
 	updateList: {},
 	databaseList: {},
 	id: name => objectid( name ),
-	start: ( dbName, ip, port, timeoutInMS, callback ) => mongo.connect( ( 'mongodb://' + ip + ':' + port + '/' + dbName ), { serverSelectionTimeoutMS: parseInt( timeoutInMS ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
+	start: ( dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ':' + parseInt( port ),toString() + '/' + escape( dbName ) ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
 		if( !err && db )	{
 			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
 			mongoDBJSObject.databaseList[dbName].collection( dbName )
