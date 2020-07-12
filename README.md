@@ -31,6 +31,8 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, () => NKMongo.start( 'RemoteDB1
 })))
 ```
 
+## Common Utility Functions
+
 ### Insert a new row or a set of rows
 ```node
 //rowOrRows can be an array of objects to insertMany or an individual object to insert a single row.
