@@ -6,7 +6,7 @@ MongoDB Connection Class for the NK Node Package
 Install using NPM
 
 ```bash
-npm i nk-mongo --save
+npm i @encke/nk-mongo --save
 ```
 
 ## How to use
@@ -15,7 +15,7 @@ Mongo is the preferred database format for NodeJS based systems, it supports mul
 
 ### Start and connect to server
 ```node
-const NKMongo = require( 'nk-mongo' )
+const NKMongo = require( '@encke/nk-mongo' )
 //                  dbName,         ip,   port, callback
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, () => {
   //Super duper awesome code here!
