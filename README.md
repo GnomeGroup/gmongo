@@ -99,6 +99,82 @@ const joins = [{ from: 'photos', field: '_id', fromField: 'user_id', as: 'photos
 NKMongo.joinsLimit( 'MyDatabase', 'users', joins, 100, { added: 1 }, { active: true }, rowsFromQuery => console.log( rowsFromQuery ) )
 ```
 
+# Securing your Mongo Server
+
+It is not always enough to run apt install mongo ... we need to follow a set of installation procedures to ensure our Mongo is protected from Prying Eyes.
+
+## 1. Install Stack
+
+Start with a clean server, so you know the configuration, if you are doing this on a shared server, most should be done already.
+
+```bash
+apt update
+apt -y upgrade
+apt -y autoremove
+apt install -y mongodb libc6
+```
+
+## 2. Configure Mongo
+
+Setup an admin user on Mongo
+
+```bash
+sytemctl mongodb stop
+mkdir /var/local/mongo
+mongod --port 27017 --dbpath /var/local/mongo
+mongo --port 27017
+  use admin
+  db.createUser({ user: 'userName', pwd: 'newUserPassowrd', roles: [ { role: 'userAdminAnyDatabase', db:'admin'} ] } )
+  quit()
+mongod --auth --port 27017 --dbpath /var/local/mongo
+mongo --port 27017 -u "userName" -p "newUserPassowrd" --authenticationDatabase "admin"
+```
+
+Edit the configuration file, in two places:
+
+```bash
+nano /etc/mongodb.conf
+```
+
+```
+bind_ip = 1.1.1.1
+```
+should become
+```
+bind_ip = 0.0.0.0
+```
+
+and
+
+```
+# Turn on/off security.  Off is currently the default
+noauth = true
+#auth = true
+```
+should become
+```
+# Turn on/off security.  Off is currently the default
+#noauth = true
+auth = true
+```
+
+then, restart the service
+
+```bash
+service mongodb restart
+```
+
+### Note: If you would like to see the connections
+```bash
+tail -f /var/log/mongodb/mongodb.log
+```
+
+### Note: If you use UFW for the linux firewall
+```bash
+ufw allow 27017/tcp
+```
+
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
