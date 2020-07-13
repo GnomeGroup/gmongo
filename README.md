@@ -123,9 +123,9 @@ sytemctl mongodb stop
 mkdir /var/local/mongo
 mongod --port 27017 --dbpath /var/local/mongo
 mongo --port 27017
-  use admin
-  db.createUser({ user: 'userName', pwd: 'newUserPassowrd', roles: [ { role: 'userAdminAnyDatabase', db:'admin'} ] } )
-  quit()
+  >use admin
+  >db.createUser({ user: 'userName', pwd: 'newUserPassowrd', roles: [ { role: 'userAdminAnyDatabase', db:'admin'} ] } )
+  >quit()
 mongod --auth --port 27017 --dbpath /var/local/mongo
 mongo --port 27017 -u "userName" -p "newUserPassowrd" --authenticationDatabase "admin"
 ```
