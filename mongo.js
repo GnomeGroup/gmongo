@@ -10,7 +10,7 @@ const mongoDBJSObject = {
 	updateList: {},
 	databaseList: {},
 	id: name => objectid( name ),
-	start: ( dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ':' + parseInt( port ).toString() + '/' + escape( dbName ) ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
+	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
 		if( !err && db )	{
 			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
 			mongoDBJSObject.databaseList[dbName].collection( dbName )
