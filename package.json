@@ -1,6 +1,6 @@
 {
   "name": "@encke/nk-mongo",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "MongoDB Connection Class for the NK Node Package",
   "main": "mongo.js",
   "scripts": {

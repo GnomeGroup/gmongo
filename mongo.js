@@ -27,16 +27,16 @@ const mongoDBJSObject = {
 				mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => {
 					if( Array.isArray( rowOrRows ) )	{
 						mongoDBJSObject.insertList[table] = 1
-						collection.insertMany( rowOrRows, () => mongoDBJSObject.insertDone( table, callback ) )
+						collection.insertMany( rowOrRows, ( err, result ) => mongoDBJSObject.insertDone( table, callback, ( err? null: result ) ) )
 					}	else	{
 						mongoDBJSObject.insertList[table] = 1
-						collection.insertOne( rowOrRows, () => mongoDBJSObject.insertDone( table, callback ) )
+						collection.insertOne( rowOrRows, ( err, result ) => mongoDBJSObject.insertDone( table, callback, ( err? null: result.insertedId ) ) )
 					}
 				})
 			}
 		}
 	},
-	insertDone: ( table, callback ) => {
+	insertDone: ( table, callback, insertedId ) => {
 		if( mongoDBJSObject.insertList[table] )	{
 			mongoDBJSObject.insertList[table]--
 			if( mongoDBJSObject.insertList[table] < 1 )	{
@@ -44,7 +44,7 @@ const mongoDBJSObject = {
 			}
 		}
 		if( callback )	{
-			callback()
+			callback( insertedId )
 		}
 	},
 	delete: ( dbName, table, dataToRemove, callback ) => {
