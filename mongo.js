@@ -16,7 +16,7 @@ const mongoDBJSObject = {
 			mongoDBJSObject.databaseList[dbName].collection( dbName )
 			callback( false, null )
 		}	else	{
-			callback( true, err )
+			callback( true, err, ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ) )
 		}
 	}),
 	insert: ( dbName, table, rowOrRows, callback ) => {
