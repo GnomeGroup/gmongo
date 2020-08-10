@@ -12,7 +12,7 @@ const mongoDBJSObject = {
 	id: name => objectid( name ),
 	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => {
 		if( Array.isArray( dbName ) )	{
-			let Databases = NK.objCopy( dbName )
+			let Databases = JSON.parse( JSON.stringify( dbName ) )
 			const connectDB = () => {
 				const thisDB = ( ( Databases && ( Databases.length > 0 ) )? Databases.shift(): null )
 				if( thisDB )  {

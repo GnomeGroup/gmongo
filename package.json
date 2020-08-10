@@ -1,6 +1,6 @@
 {
   "name": "nk-mongo",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "MongoDB Connection Class for the NK Node Package",
   "main": "mongo.js",
   "scripts": {
