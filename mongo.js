@@ -10,7 +10,23 @@ const mongoDBJSObject = {
 	updateList: {},
 	databaseList: {},
 	id: name => objectid( name ),
-	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
+	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => {
+		if( Array.isArray( dbName ) )	{
+			let Databases = NK.objCopy( dbName )
+			const connectDB = () => {
+				const thisDB = ( ( Databases && ( Databases.length > 0 ) )? Databases.shift(): null )
+				if( thisDB )  {
+					mongoDBJSObject.connect( isAtlas, thisDB, ip, port, user, pass, timeoutInMS, connectDB )
+				}	else {
+					callback( false, null )
+				}
+			}
+			connectDB()
+		}	else {
+			mongoDBJSObject.connect( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback )
+		}
+	},
+	connect: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
 		if( !err && db )	{
 			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
 			mongoDBJSObject.databaseList[dbName].collection( dbName )
