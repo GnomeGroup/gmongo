@@ -101,9 +101,27 @@ NKMongo.delete( 'MyDatabase', 'users',
 ```
 
 ### **Update** rows in the database
+Use: 
+```
+NKMongo.update(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <Data to Update>, //Object
+  <New Data>, //Object
+  <Callback> //Function
+)
+```
+Example:
 ```javascript
-//                    dbName, table,      dataToUpdate,       newData,        callback
-NKMongo.update( 'MyDatabase', 'users', { active: false }, { active: true }, () => console.log( 'all done' ) )
+NKMongo.update( 'MyDatabase', 'users', 
+  { 
+    active: false 
+  }, 
+  { 
+    active: true
+  }, 
+  () => console.log( 'all done' ) 
+)
 ```
 
 ## Querying the database
