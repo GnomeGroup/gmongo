@@ -19,7 +19,7 @@ Mongo is the preferred database format for NodeJS based systems. It supports mul
 
 Use NKMongo.start()
 
-`NKMongo.start( <DatabaseName>, <IP>, <Port>, <User>, <Password>, <Timeout>, <Callback>);`
+`NKMongo.start( <Database Name>, <IP>, <Port>, <User>, <Password>, <Timeout in milliseconds>, <Callback>);`
 
 The **database connection** object is saved in the **NKMongo Object**. Indexed by the database **name**, so there is a caveat to not use the same database name across distinct servers.
 
@@ -45,13 +45,30 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, e
 })))
 ```
 ---
+
 ## Common Utility Functions
 
-### Insert a new row or a set of rows
-```node
-//rowOrRows can be an array of objects to insertMany or an individual object to insert a single row.
-//                    dbName, table,      rowOrRows,                                                                        callback
-NKMongo.insert( 'MyDatabase', 'users', { username: 'jose', pass: '123', active: false, added: ( new Date() ).getTime() }, () => console.log( 'all done' ) )
+### **Insert** a new row or a set of rows
+Use: 
+```
+NKMongo.insert( 
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <Row or Rows>, //A single Object to insert one, or an Array of Objects to insert many
+  <Callback> //Function
+) 
+```
+
+Example:
+```javascript
+NKMongo.insert( 'MyDatabase', 'users', 
+  { 
+    username: 'jose', 
+    pass: '123', 
+    active: false, 
+    added: ( new Date() ).getTime() 
+  }, 
+  () => console.log( 'all done' ) )
 ```
 
 ### Delete rows from the database
