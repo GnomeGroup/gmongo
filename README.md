@@ -34,7 +34,7 @@ NKMongo.start(
 The **database connection** object is saved in the **NKMongo Object**. Indexed by the database **name**, so there is a caveat to not use the same database name across distinct servers.
 
 Example:
-```javascript
+```node
 const NKMongo = require( 'nk-mongo' )
 
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, errorMessage ) => {
@@ -46,7 +46,7 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, er
 ### To Start and connect to **Multiple Servers**
 
 WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances, for example:
-```javascript
+```node
 const NKMongo = require( 'nk-mongo' )
 
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, null, null, null, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, null, null, null, ( isError3, errorMessage3 ) => {
@@ -69,7 +69,7 @@ NKMongo.insert(
 ```
 
 Example:
-```javascript
+```node
 NKMongo.insert( 'MyDatabase', 'users', 
   { 
     username: 'jose', 
@@ -90,7 +90,7 @@ NKMongo.delete(
 )
 ```
 Example:
-```Javascript
+```node
 NKMongo.delete( 'MyDatabase', 'users', 
   { 
     myuser: NKMongo.id( user._id ) 
@@ -109,7 +109,7 @@ NKMongo.update(
 )
 ```
 Example:
-```javascript
+```node
 NKMongo.update( 'MyDatabase', 'users', 
   { 
     active: false 
@@ -131,7 +131,7 @@ NKMongo.query(
 )
 ```
 Example:
-```javascript
+```node
 NKMongo.query( 'MyDatabase', 'users', 
   { 
     active: true 
@@ -151,7 +151,7 @@ NKMongo.querySort(
 )
 ```
 Example:
-```javascript
+```node
 NKMongo.querySort( 'MyDatabase', 'users', 
   { added: 1 }, 
   { active: true }, 
@@ -171,7 +171,7 @@ NKMongo.queryLimitSort(
 )
 ```
 Example
-```javascript
+```node
 NKMongo.queryLimitSort( 'MyDatabase', 'users', 
   100, 
   { added: 1 }, 
@@ -191,7 +191,7 @@ NKMongo.singleQuery(
 );
 ```
 Example:
-```javascript
+```node
 NKMongo.singleQuery( 'MyDatabase', 'users', 
   { 
     myuser: NKMongo.id( user._id ) 
@@ -200,7 +200,7 @@ NKMongo.singleQuery( 'MyDatabase', 'users',
 )
 ```
 This **singleQuery** is very useful in the authentication methods, e.g.
-```javascript
+```node
 NKMongo.singleQuery( 'MyDatabase', 'users', 
   { loginSessionKey: req.sessionKey }, 
   rowFromQuery => res.json( rowFromQuery? true: false ) 
@@ -222,7 +222,7 @@ NKMongo.singleQuery(
 );
 ```
 Example:
-```javascript
+```node
 NKMongo.join( 'MyDatabase', 'users', 
   '_id', 
   'photos',
@@ -247,7 +247,7 @@ NKMongo.joinsLimit(
 );
 ```
 Example
-```javascript
+```node
 const joins = [
   { from: 'photos', field: '_id', fromField: 'user_id', as: 'photos' },
   { from: 'history', field: '_id', fromField: 'user_id', as: 'transactions' }
