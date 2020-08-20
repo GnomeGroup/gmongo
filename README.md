@@ -124,16 +124,31 @@ NKMongo.update( 'MyDatabase', 'users',
 )
 ```
 
-## Querying the database
-
-### Query which should return ONLY ONE ROW
-```node
-//                        dbName, table,      query,                              callback
-NKMongo.singleQuery( 'MyDatabase', 'users', { myuser: NKMongo.id( user._id ) }, rowFromQuery => console.log( rowFromQuery ) )
+### **Querying** the database
+Use:
 ```
-This singleQuery is very useful in the authentication methods, e.g.
-```node
-NKMongo.singleQuery( 'MyDatabase', 'users', { loginSessionKey: req.sessionKey }, rowFromQuery => res.json( rowFromQuery? true: false ) )
+NKMongo.singleQuery(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <Query>, //Object
+  <Calback> //Function, Recieves a single argument of rowFromQuery.
+);
+```
+Note: Query should only ever return **ONE ROW**.
+```javascript
+NKMongo.singleQuery( 'MyDatabase', 'users', 
+  { 
+    myuser: NKMongo.id( user._id ) 
+  }, 
+  rowFromQuery => console.log( rowFromQuery ) 
+)
+```
+This **singleQuery** is very useful in the authentication methods, e.g.
+```javascript
+NKMongo.singleQuery( 'MyDatabase', 'users', 
+  { loginSessionKey: req.sessionKey }, 
+  rowFromQuery => res.json( rowFromQuery? true: false ) 
+)
 ```
 
 ### Run Query
