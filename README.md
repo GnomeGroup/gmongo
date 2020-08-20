@@ -11,7 +11,7 @@ npm i nk-mongo --save
 
 ## How to use
 
-Mongo is the preferred database format for NodeJS based systems, it supports multi-table joins (as commonly mistaken as the 'weakness' of Mongo). This package will give you one-line access to all common Mongo functions in simple to use queries.
+Mongo is the preferred database format for NodeJS based systems. It supports multi-table joins (commonly mistaken as the "weakness" of Mongo). This package will give you one-line access to all common Mongo functions in simple-to-use queries.
 
 ### Start and connect to server
 ```node
