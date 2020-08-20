@@ -50,7 +50,7 @@ WHAT?! Yes, you can connect to multiple servers in the same core, using them as 
 const NKMongo = require( 'nk-mongo' )
 
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, null, null, null, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, null, null, null, ( isError3, errorMessage3 ) => {
-  //Even super duper-er code here!
+  //Even more super duper awesome code here!
   console.log( isError1, errorMessage1, isError2, errorMessage2, isError3, errorMessage3 )
 })))
 ```
@@ -81,14 +81,27 @@ NKMongo.insert( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### Delete rows from the database
-```node
-//                    dbName, table,     dataToRemove,                      callback
-NKMongo.delete( 'MyDatabase', 'users', { myuser: NKMongo.id( user._id ) }, () => console.log( 'all done' ) )
+### **Delete** rows from the database
+Use:
+```
+NKMongo.delete(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <Data to Remove>, //Object
+  <Callback> //Function
+)
+```
+Example:
+```Javascript
+NKMongo.delete( 'MyDatabase', 'users', 
+  { 
+    myuser: NKMongo.id( user._id ) 
+  }, 
+  () => console.log( 'all done' ) )
 ```
 
-### Update rows in the database
-```node
+### **Update** rows in the database
+```javascript
 //                    dbName, table,      dataToUpdate,       newData,        callback
 NKMongo.update( 'MyDatabase', 'users', { active: false }, { active: true }, () => console.log( 'all done' ) )
 ```
