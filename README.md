@@ -261,7 +261,7 @@ NKMongo.joinsLimit( 'MyDatabase', 'users',
   rowsFromQuery => console.log( rowsFromQuery ) 
 )
 ```
-
+---
 ## Securing your Mongo Server
 
 It is not always enough to run `apt install mongo` ... we need to follow a set of installation procedures to ensure our Mongo is protected from Prying Eyes.
