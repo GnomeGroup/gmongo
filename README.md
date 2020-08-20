@@ -13,6 +13,8 @@ npm i nk-mongo --save
 
 Mongo is the preferred database format for NodeJS based systems. It supports multi-table joins (commonly mistaken as the "weakness" of Mongo). This package will give you one-line access to all common Mongo functions in simple-to-use queries.
 
+---
+
 ## To Start and Connect to Server
 
 Use NKMongo.start()
@@ -24,23 +26,25 @@ The **database connection** object is saved in the **NKMongo Object**. Indexed b
 Example:
 ```javascript
 const NKMongo = require( 'nk-mongo' )
+
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, errorMessage ) => {
   //Super duper awesome code here!
   console.log( isError, errorMessage )
 })
 ```
 
+### To Start and connect to **multiple servers**
 
-
-### Start and connect to multiple servers
-```node
+WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances, for example:
+```javascript
 const NKMongo = require( 'nk-mongo' )
+
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, null, null, null, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, null, null, null, ( isError3, errorMessage3 ) => {
+  //Even super duper-er code here!
   console.log( isError1, errorMessage1, isError2, errorMessage2, isError3, errorMessage3 )
-  //WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances
 })))
 ```
-
+---
 ## Common Utility Functions
 
 ### Insert a new row or a set of rows
