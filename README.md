@@ -8,21 +8,29 @@ Install using NPM
 ```bash
 npm i nk-mongo --save
 ```
-
+---
 ## How to use
 
 Mongo is the preferred database format for NodeJS based systems. It supports multi-table joins (commonly mistaken as the "weakness" of Mongo). This package will give you one-line access to all common Mongo functions in simple-to-use queries.
 
-### Start and connect to server
-```node
+## To Start and Connect to Server
+
+Use NKMongo.start()
+
+`NKMongo.start( <DatabaseName>, <IP>, <Port>, <User>, <Password>, <Timeout>, <Callback>);`
+
+The **database connection** object is saved in the **NKMongo Object**. Indexed by the database **name**, so there is a caveat to not use the same database name across distinct servers.
+
+Example:
+```javascript
 const NKMongo = require( 'nk-mongo' )
-//                  dbName,         ip,   port, user, pass, timeoutInMS, callback
 NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, errorMessage ) => {
   //Super duper awesome code here!
   console.log( isError, errorMessage )
 })
 ```
-The database connection object is saved in the NKMongo Object, indexed by the database name, so there is a caveat to not use the same database name across distinct servers.
+
+
 
 ### Start and connect to multiple servers
 ```node
