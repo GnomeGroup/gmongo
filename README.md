@@ -19,7 +19,17 @@ Mongo is the preferred database format for NodeJS based systems. It supports mul
 
 Use NKMongo.start()
 
-`NKMongo.start( <Database Name>, <IP>, <Port>, <User>, <Password>, <Timeout in milliseconds>, <Callback>);`
+```
+NKMongo.start( 
+  <Database Name>, //String
+  <IP>, //String
+  <Port>, //Number
+  <User>, //String
+  <Password>, //String
+  <Timeout in milliseconds>, //Number
+  <Callback> //Function
+);
+```
 
 The **database connection** object is saved in the **NKMongo Object**. Indexed by the database **name**, so there is a caveat to not use the same database name across distinct servers.
 
