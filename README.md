@@ -15,9 +15,9 @@ Mongo is the preferred database format for NodeJS based systems. It supports mul
 
 ---
 
-## To Start and Connect to Server
+## Connecting
 
-Use NKMongo.start()
+### To connect to a server use NKMongo.start():
 
 ```
 NKMongo.start( 
@@ -43,7 +43,7 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, er
 })
 ```
 
-### To Start and connect to **multiple servers**
+### To Start and connect to **Multiple Servers**
 
 WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances, for example:
 ```javascript
@@ -58,8 +58,7 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, e
 
 ## Common Utility Functions
 
-### Insert
-#### Use NKMongo.insert(), to a new row or a set of rows:
+### To INSERT a new row or a set of rows, use NKMongo.insert():
 ```
 NKMongo.insert( 
   <Database Name>, //String 
@@ -81,8 +80,7 @@ NKMongo.insert( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### **Delete**
-#### Use NKMongo.delete() to delete rows from the collection:
+### To DELETE rows from the collection, use NKMongo.delete():
 ```
 NKMongo.delete(
   <Database Name>, //String 
@@ -100,8 +98,7 @@ NKMongo.delete( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### **Update** 
-#### Use NKMongo.update to update rows in the collection: 
+### To UPDATE rows in the collection use NKMongo.update: 
 ```
 NKMongo.update(
   <Database Name>, //String 
@@ -124,8 +121,7 @@ NKMongo.update( 'MyDatabase', 'users',
 )
 ```
 
-### **Querying**
-#### Use NKMongo.query() for a query to the collection:
+### To QUERY the collection use NKMongo.query():
 ```
 NKMongo.query(
   <Database Name>, //String 
@@ -144,9 +140,9 @@ NKMongo.query( 'MyDatabase', 'users',
 )
 ```
 
-#### To Run Query with a sort by set of data:
+### To QUERY with a SORT use NKMongo.querySort:
 ```
-NKMongo.query(
+NKMongo.querySort(
   <Database Name>, //String 
   <Collection Name>, //String
   <SORT BY>, //Object
@@ -156,7 +152,6 @@ NKMongo.query(
 ```
 Example:
 ```javascript
-//                      dbName, table,    sortBy,       query,              callback
 NKMongo.querySort( 'MyDatabase', 'users', 
   { added: 1 }, 
   { active: true }, 
@@ -164,13 +159,34 @@ rowsFromQuery => console.log( rowsFromQuery ) )
 ```
 
 
-#### Use NKMongo.singleQuery() for a single query to the collection:
+### To QUERY with a SORT and LIMIT, use NKMongo.queryLimitSort:
+```
+NKMongo.queryLimitSort(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <LIMIT>, //Number
+  <SORT BY>, //Object
+  <QUERY>, //Object
+  <Callback> //Function, Recieves rows from query
+)
+```
+Example
+```javascript
+NKMongo.queryLimitSort( 'MyDatabase', 'users', 
+  100, 
+  { added: 1 }, 
+  { active: true }, 
+  rowsFromQuery => console.log( rowsFromQuery ) 
+)
+```
+
+### For a SINGLE QUERY the collection use NKMongo.singleQuery():
 Note: singleQuery should only ever query **ONE ROW**.
 ```
 NKMongo.singleQuery(
   <Database Name>, //String 
   <Collection Name>, //String
-  <Query>, //Object
+  <QUERY>, //Object
   <Calback> //Function, Recieves a single row from query.
 );
 ```
@@ -191,97 +207,124 @@ NKMongo.singleQuery( 'MyDatabase', 'users',
 )
 ```
 
-### Run Query with a sort by and limit to row count set of data
-```node
-//                      dbName,       table,  max,  sortBy,       query,            callback
-NKMongo.queryLimitSort( 'MyDatabase', 'users', 100, { added: 1 }, { active: true }, rowsFromQuery => console.log( rowsFromQuery ) )
+### To JOIN a SINGLE COLLECTION to another, use NKMongo.join()
+```
+NKMongo.singleQuery(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <Collection ID Field>, //String
+  <Name of Collection to join to>, //String
+  <ID Field of collection to join to>, //String
+  <Join to Element>, //String
+  <Sort By>, //Object
+  <Query>, // Object
+  <Calback> //Function, Recieves rows from query
+);
+```
+Example:
+```javascript
+NKMongo.join( 'MyDatabase', 'users', 
+  '_id', 
+  'photos',
+  'user_id', 
+  'photos', 
+  { added: 1 }, 
+  { myuser: NKMongo.id( user._id ) }, 
+  rowsFromQuery => console.log( rowsFromQuery ) 
+)
 ```
 
-### Run a query to perform only one JOIN to another table
-```node
-//              dbName,     table, tableIDField, joinTo, joinToIDField, joinedToElement, sortBy, query, callback
-NKMongo.join( 'MyDatabase', 'users', '_id', 'photos', 'user_id', 'photos', { added: 1 }, { myuser: NKMongo.id( user._id ) }, rowsFromQuery => console.log( rowsFromQuery ) )
+### To QUERY, and perform a LIST of JOINS defined in the query, use NKMongo.joinsLimit():
+```
+NKMongo.joinsLimit(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <JOINS>, //Array of Objects
+  <LIMIT>, //Number
+  <SORT BY>, //Object
+  <QUERY>, //Object
+  <Calback> //Function, Recieves rows from query
+);
+```
+Example
+```javascript
+const joins = [
+  { from: 'photos', field: '_id', fromField: 'user_id', as: 'photos' },
+  { from: 'history', field: '_id', fromField: 'user_id', as: 'transactions' }
+];
+
+NKMongo.joinsLimit( 'MyDatabase', 'users', 
+  joins, 
+  100, 
+  { added: 1 }, 
+  { active: true }, 
+  rowsFromQuery => console.log( rowsFromQuery ) 
+)
 ```
 
-### Run a query, performing a list of JOINS defined in the query
-```node
-const joins = [{ from: 'photos', field: '_id', fromField: 'user_id', as: 'photos' },
-              { from: 'history', field: '_id', fromField: 'user_id', as: 'transactions' }]
-//                      dbName, table,    joins, max,   sortBy,       query,            callback
-NKMongo.joinsLimit( 'MyDatabase', 'users', joins, 100, { added: 1 }, { active: true }, rowsFromQuery => console.log( rowsFromQuery ) )
-```
+## Securing your Mongo Server
 
-# Securing your Mongo Server
+It is not always enough to run `apt install mongo` ... we need to follow a set of installation procedures to ensure our Mongo is protected from Prying Eyes.
 
-It is not always enough to run apt install mongo ... we need to follow a set of installation procedures to ensure our Mongo is protected from Prying Eyes.
+1. Install Stack
+  
+  Start with a clean server, so you know the configuration. If you are doing this on a shared server, most should be done already.
 
-## 1. Install Stack
+  ```bash
+  apt update
+  apt -y upgrade
+  apt -y autoremove
+  apt install -y mongodb libc6
+  ```
 
-Start with a clean server, so you know the configuration, if you are doing this on a shared server, most should be done already.
+2. Configure Mongo
 
-```bash
-apt update
-apt -y upgrade
-apt -y autoremove
-apt install -y mongodb libc6
-```
+  Setup an admin user on Mongo  
+  ```bash
+  sytemctl mongodb stop
+  mkdir /var/local/mongo
+  mongod --port 27017 --dbpath /var/local/mongo
+  mongo --port 27017
+    >use admin
+    >db.createUser({ user: 'userName', pwd: 'newUserPassowrd', roles: [ { role: 'userAdminAnyDatabase', db:'admin'} ] } )
+    >quit()
+  mongod --auth --port 27017 --dbpath /var/local/mongo
+  mongo --port 27017 -u "userName" -p "newUserPassowrd" --authenticationDatabase "admin"
+  ```
 
-## 2. Configure Mongo
+  Edit the configuration file, in two places:
+  ```bash
+  nano /etc/mongodb.conf
+  ```
+  `bind_ip = 1.1.1.1` to `bind_ip = 0.0.0.0`
 
-Setup an admin user on Mongo
+  and
 
-```bash
-sytemctl mongodb stop
-mkdir /var/local/mongo
-mongod --port 27017 --dbpath /var/local/mongo
-mongo --port 27017
-  >use admin
-  >db.createUser({ user: 'userName', pwd: 'newUserPassowrd', roles: [ { role: 'userAdminAnyDatabase', db:'admin'} ] } )
-  >quit()
-mongod --auth --port 27017 --dbpath /var/local/mongo
-mongo --port 27017 -u "userName" -p "newUserPassowrd" --authenticationDatabase "admin"
-```
+  ```bash
+  # Turn on/off security.  Off is currently the default
+  noauth = true
+  #auth = true
+  ```
+  should become
+  ```bash
+  # Turn on/off security.  Off is currently the default
+  #noauth = true
+  auth = true
+  ```
 
-Edit the configuration file, in two places:
+  then, restart the service
 
-```bash
-nano /etc/mongodb.conf
-```
+  ```bash
+  service mongodb restart
+  ```
 
-```
-bind_ip = 1.1.1.1
-```
-should become
-```
-bind_ip = 0.0.0.0
-```
 
-and
-
-```
-# Turn on/off security.  Off is currently the default
-noauth = true
-#auth = true
-```
-should become
-```
-# Turn on/off security.  Off is currently the default
-#noauth = true
-auth = true
-```
-
-then, restart the service
-
-```bash
-service mongodb restart
-```
-
-### Note: If you would like to see the connections
+### Notes: 
+#### If you would like to see the connections
 ```bash
 tail -f /var/log/mongodb/mongodb.log
 ```
-
-### Note: If you use UFW for the linux firewall
+#### If you use UFW for the linux firewall
 ```bash
 ufw allow 27017/tcp
 ```
