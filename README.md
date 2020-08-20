@@ -58,13 +58,13 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, e
 
 ## Common Utility Functions
 
-### **Insert** a new row or a set of rows
-Use: 
+### Insert
+Use NKMongo.insert(), to a new row or a set of rows:
 ```
 NKMongo.insert( 
   <Database Name>, //String 
   <Collection Name>, //String
-  <Row or Rows>, //A single Object to insert one, or an Array of Objects to insert many
+  <ROW OR ROWS>, //A single Object to insert one, or an Array of Objects to insert many
   <Callback> //Function
 ) 
 ```
@@ -81,13 +81,13 @@ NKMongo.insert( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### **Delete** rows from the database
-Use:
+### **Delete**
+Use NKMongo.delete() to delete rows from a collection:
 ```
 NKMongo.delete(
   <Database Name>, //String 
   <Collection Name>, //String
-  <Data to Remove>, //Object
+  <DATA TO REMOVE>, //Object
   <Callback> //Function
 )
 ```
@@ -100,14 +100,14 @@ NKMongo.delete( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### **Update** rows in the database
-Use: 
+### **Update** 
+Use NKMongo.update to update rows in a collection: 
 ```
 NKMongo.update(
   <Database Name>, //String 
   <Collection Name>, //String
-  <Data to Update>, //Object
-  <New Data>, //Object
+  <DATA TO UPDATE>, //Object
+  <NEW DATA>, //Object
   <Callback> //Function
 )
 ```
@@ -124,8 +124,10 @@ NKMongo.update( 'MyDatabase', 'users',
 )
 ```
 
-### **Querying** the database
-Use:
+### **Querying**
+Use NKMongo.singleQuery() for a single query to a collection:
+
+Note: Query should only ever return **ONE ROW**.
 ```
 NKMongo.singleQuery(
   <Database Name>, //String 
@@ -134,7 +136,6 @@ NKMongo.singleQuery(
   <Calback> //Function, Recieves a single argument of rowFromQuery.
 );
 ```
-Note: Query should only ever return **ONE ROW**.
 ```javascript
 NKMongo.singleQuery( 'MyDatabase', 'users', 
   { 
