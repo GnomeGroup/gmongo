@@ -59,7 +59,7 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, e
 ## Common Utility Functions
 
 ### Insert
-Use NKMongo.insert(), to a new row or a set of rows:
+#### Use NKMongo.insert(), to a new row or a set of rows:
 ```
 NKMongo.insert( 
   <Database Name>, //String 
@@ -82,7 +82,7 @@ NKMongo.insert( 'MyDatabase', 'users',
 ```
 
 ### **Delete**
-Use NKMongo.delete() to delete rows from a collection:
+#### Use NKMongo.delete() to delete rows from the collection:
 ```
 NKMongo.delete(
   <Database Name>, //String 
@@ -101,7 +101,7 @@ NKMongo.delete( 'MyDatabase', 'users',
 ```
 
 ### **Update** 
-Use NKMongo.update to update rows in a collection: 
+#### Use NKMongo.update to update rows in the collection: 
 ```
 NKMongo.update(
   <Database Name>, //String 
@@ -125,17 +125,36 @@ NKMongo.update( 'MyDatabase', 'users',
 ```
 
 ### **Querying**
-Use NKMongo.singleQuery() for a single query to a collection:
+#### Use NKMongo.query() for a query to the collection:
+```
+NKMongo.query(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <QUERY>, //Object
+  <Callback> //Function, Recieves rows from query
+)
+```
+Example:
+```javascript
+NKMongo.query( 'MyDatabase', 'users', 
+  { 
+    active: true 
+  }, 
+  rowsFromQuery => console.log( rowsFromQuery ) 
+)
+```
 
-Note: Query should only ever return **ONE ROW**.
+#### Use NKMongo.singleQuery() for a single query to the collection:
+Note: singleQuery should only ever query **ONE ROW**.
 ```
 NKMongo.singleQuery(
   <Database Name>, //String 
   <Collection Name>, //String
   <Query>, //Object
-  <Calback> //Function, Recieves a single argument of rowFromQuery.
+  <Calback> //Function, Recieves a single row from query.
 );
 ```
+Example:
 ```javascript
 NKMongo.singleQuery( 'MyDatabase', 'users', 
   { 
@@ -152,11 +171,6 @@ NKMongo.singleQuery( 'MyDatabase', 'users',
 )
 ```
 
-### Run Query
-```node
-//                  dbName, table,      query,          callback
-NKMongo.query( 'MyDatabase', 'users', { active: true }, rowsFromQuery => console.log( rowsFromQuery ) )
-```
 
 ### Run Query with a sort by set of data
 ```node
