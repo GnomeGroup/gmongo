@@ -144,6 +144,26 @@ NKMongo.query( 'MyDatabase', 'users',
 )
 ```
 
+#### To Run Query with a sort by set of data:
+```
+NKMongo.query(
+  <Database Name>, //String 
+  <Collection Name>, //String
+  <SORT BY>, //Object
+  <QUERY>, //Object
+  <Callback> //Function, Recieves rows from query
+)
+```
+Example:
+```javascript
+//                      dbName, table,    sortBy,       query,              callback
+NKMongo.querySort( 'MyDatabase', 'users', 
+  { added: 1 }, 
+  { active: true }, 
+rowsFromQuery => console.log( rowsFromQuery ) )
+```
+
+
 #### Use NKMongo.singleQuery() for a single query to the collection:
 Note: singleQuery should only ever query **ONE ROW**.
 ```
@@ -169,13 +189,6 @@ NKMongo.singleQuery( 'MyDatabase', 'users',
   { loginSessionKey: req.sessionKey }, 
   rowFromQuery => res.json( rowFromQuery? true: false ) 
 )
-```
-
-
-### Run Query with a sort by set of data
-```node
-//                      dbName, table,    sortBy,       query,              callback
-NKMongo.querySort( 'MyDatabase', 'users', { added: 1 }, { active: true }, rowsFromQuery => console.log( rowsFromQuery ) )
 ```
 
 ### Run Query with a sort by and limit to row count set of data
