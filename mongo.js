@@ -29,9 +29,9 @@ const db = {
 	},
 	connect: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => 
 		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): DEFAULT_CONNECTION_TIMEOUT ), useNewUrlParser: true, useUnifiedTopology: true },
-			( err, db ) => {
-				if( !err && db )	{
-					db.databaseList[dbName] = db.db( dbName )
+			( err, dataBase ) => {
+				if( !err && dataBase )	{
+					db.databaseList[dbName] = dataBase.db( dbName )
 					db.databaseList[dbName].collection( dbName )
 					callback( false, null )
 				}	else	{
