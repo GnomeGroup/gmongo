@@ -1,10 +1,11 @@
 const mongo		=	require( 'mongodb' ).MongoClient
 const objectid	=	require( 'mongodb' ).ObjectID
 
-const mongoDBJSObject = {
+const DEFAULT_CONNECTION_TIMEOUT = 30000
+
+const db = {
 	db: null,
 	retryTimeout: 100,
-	connectionTimeout: 30000,
 	insertList: {},
 	deleteList: {},
 	updateList: {},
@@ -13,50 +14,52 @@ const mongoDBJSObject = {
 	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => {
 		if( Array.isArray( dbName ) )	{
 			let Databases = JSON.parse( JSON.stringify( dbName ) )
-			const connectDB = () => {
+			const connectDB = _=> {
 				const thisDB = ( ( Databases && ( Databases.length > 0 ) )? Databases.shift(): null )
 				if( thisDB )  {
-					mongoDBJSObject.connect( isAtlas, thisDB, ip, port, user, pass, timeoutInMS, connectDB )
+					db.connect( isAtlas, thisDB, ip, port, user, pass, timeoutInMS, connectDB )
 				}	else {
 					callback( false, null )
 				}
 			}
 			connectDB()
 		}	else {
-			mongoDBJSObject.connect( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback )
+			db.connect( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback )
 		}
 	},
-	connect: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): mongoDBJSObject.connectionTimeout ), useNewUrlParser: true, useUnifiedTopology: true }, ( err, db ) => {
-		if( !err && db )	{
-			mongoDBJSObject.databaseList[dbName] = db.db( dbName )
-			mongoDBJSObject.databaseList[dbName].collection( dbName )
-			callback( false, null )
-		}	else	{
-			callback( true, err, ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ) )
-		}
+	connect: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => 
+		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): DEFAULT_CONNECTION_TIMEOUT ), useNewUrlParser: true, useUnifiedTopology: true },
+			( err, db ) => {
+				if( !err && db )	{
+					db.databaseList[dbName] = db.db( dbName )
+					db.databaseList[dbName].collection( dbName )
+					callback( false, null )
+				}	else	{
+					callback( true, err, ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ) )
+				}
 	}),
 	insert: ( dbName, table, rowOrRows, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			if( mongoDBJSObject.insertList[table] )	{
-				setTimeout( () => mongoDBJSObject.insert( dbName, table, rowOrRows, callback ), mongoDBJSObject.retryTimeout )
+		if( db.databaseList[dbName] )	{
+			if( db.insertList[table] )	{
+				setTimeout( _=> db.insert( dbName, table, rowOrRows, callback ), db.retryTimeout )
 			}	else	{
-				mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => {
+				db.databaseList[dbName].collection( table, ( err, collection ) => {
 					if( Array.isArray( rowOrRows ) )	{
-						mongoDBJSObject.insertList[table] = 1
-						collection.insertMany( rowOrRows, ( err, result ) => mongoDBJSObject.insertDone( table, callback, ( err? null: result ) ) )
+						db.insertList[table] = 1
+						collection.insertMany( rowOrRows, ( err, result ) => db.insertDone( table, callback, ( err? null: result ) ) )
 					}	else	{
-						mongoDBJSObject.insertList[table] = 1
-						collection.insertOne( rowOrRows, ( err, result ) => mongoDBJSObject.insertDone( table, callback, ( err? null: result.insertedId ) ) )
+						db.insertList[table] = 1
+						collection.insertOne( rowOrRows, ( err, result ) => db.insertDone( table, callback, ( err? null: result.insertedId ) ) )
 					}
 				})
 			}
 		}
 	},
 	insertDone: ( table, callback, insertedId ) => {
-		if( mongoDBJSObject.insertList[table] )	{
-			mongoDBJSObject.insertList[table]--
-			if( mongoDBJSObject.insertList[table] < 1 )	{
-				delete mongoDBJSObject.insertList[table]
+		if( db.insertList[table] )	{
+			db.insertList[table]--
+			if( db.insertList[table] < 1 )	{
+				delete db.insertList[table]
 			}
 		}
 		if( callback )	{
@@ -64,62 +67,62 @@ const mongoDBJSObject = {
 		}
 	},
 	delete: ( dbName, table, dataToRemove, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			if( mongoDBJSObject.deleteList[table] )	{
-				setTimeout( () => mongoDBJSObject.delete( dbName, table, dataToRemove, callback ), mongoDBJSObject.retryTimeout )
+		if( db.databaseList[dbName] )	{
+			if( db.deleteList[table] )	{
+				setTimeout( _=> db.delete( dbName, table, dataToRemove, callback ), db.retryTimeout )
 			}	else	{
-				mongoDBJSObject.deleteList[table] = true;
-				mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.deleteMany( dataToRemove, () => mongoDBJSObject.deleteDone( table, callback ) ) )
+				db.deleteList[table] = true;
+				db.databaseList[dbName].collection( table, ( err, collection ) => collection.deleteMany( dataToRemove, _=> db.deleteDone( table, callback ) ) )
 			}
 		}
 	},
 	deleteDone: ( table, callback ) => {
-		if( mongoDBJSObject.deleteList[table] )	{
-			delete mongoDBJSObject.deleteList[table]
+		if( db.deleteList[table] )	{
+			delete db.deleteList[table]
 		}
 		if( callback )	{
 			callback()
 		}
 	},
 	update: ( dbName, table, dataToUpdate, newData, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			if( mongoDBJSObject.updateList[table] )	{
-				setTimeout( () => mongoDBJSObject.update( dbName, table, dataToUpdate, newData, callback ), mongoDBJSObject.retryTimeout )
+		if( db.databaseList[dbName] )	{
+			if( db.updateList[table] )	{
+				setTimeout( _=> db.update( dbName, table, dataToUpdate, newData, callback ), db.retryTimeout )
 			}	else	{
-				mongoDBJSObject.updateList[table] = true
-				mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.updateMany( dataToUpdate, { $set: newData }, () => mongoDBJSObject.updateDone( table, callback ) ) )
+				db.updateList[table] = true
+				db.databaseList[dbName].collection( table, ( err, collection ) => collection.updateMany( dataToUpdate, { $set: newData }, _=> db.updateDone( table, callback ) ) )
 			}
 		}
 	},
 	updateDone: ( table, callback ) => {
-		if( mongoDBJSObject.updateList[table] )	{
-			delete mongoDBJSObject.updateList[table]
+		if( db.updateList[table] )	{
+			delete db.updateList[table]
 		}
 		if( callback )	{
 			callback()
 		}
 	},
 	singleQuery: ( dbName, table, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.findOne( query, ( err, item ) => callback( item ) ) );
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => collection.findOne( query, ( err, item ) => callback( item ) ) );
 		}
 	},
 	query: ( dbName, table, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).toArray( ( err, items ) => callback( items ) ) );
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).toArray( ( err, items ) => callback( items ) ) );
 		}
 	},
 	join: ( dbName, table, tableIDField, joinTo, joinToIDField, joinedToElement, sortBy, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => {
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => {
 				let lkData = { $lookup: { from: joinTo, localField: tableIDField, foreignField: joinToIDField, as: joinedToElement } }
 				collection.aggregate( [ lkData, { $match: query } ], { $sort: sortBy } ).toArray( ( err, items ) => callback( items ) )
 			});
 		}
 	},
 	joinsLimit: ( dbName, table, joins, max, sortBy, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => {
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => {
 				let lookupdata = []
 				for( let i = 0; i < joins.length; i++ )	{
 					let lookupDataItem = { from: joins[i].from, localField: joins[i].field, foreignField: joins[i].fromField, as: joins[i].name }
@@ -131,15 +134,15 @@ const mongoDBJSObject = {
 		}
 	},
 	querySort: ( dbName, table, sortBy, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).sort( sortBy ).toArray( ( err, items ) => callback( items ) ) )
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).sort( sortBy ).toArray( ( err, items ) => callback( items ) ) )
 		}
 	},
 	queryLimitSort: ( dbName, table, max, sortBy, query, callback ) => {
-		if( mongoDBJSObject.databaseList[dbName] )	{
-			mongoDBJSObject.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).limit( max ).sort( sortBy ).toArray( ( err, items ) => callback( items ) ) )
+		if( db.databaseList[dbName] )	{
+			db.databaseList[dbName].collection( table, ( err, collection ) => collection.find( query ).limit( max ).sort( sortBy ).toArray( ( err, items ) => callback( items ) ) )
 		}
 	}
 }
 
-module.exports = mongoDBJSObject
+module.exports = db

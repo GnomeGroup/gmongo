@@ -1,12 +1,12 @@
-# NK-Mongo
-MongoDB Connection Class for the NK Node Package
+# gmongo
+MongoDB Connection Class
 
 ## Installation
 
 Install using NPM
 
 ```bash
-npm i nk-mongo --save
+npm i gmongo --save
 ```
 ---
 ## How to use
@@ -17,10 +17,11 @@ Mongo is the preferred database format for NodeJS based systems. It supports mul
 
 ## Connecting
 
-### To connect to a server use NKMongo.start():
+### To connect to a server use Mongo.start()
 
 ```
-NKMongo.start( 
+Mongo.start( 
+  <Is Atlas DB>, //Boolean
   <Database Name>, //String
   <IP>, //String
   <Port>, //Number
@@ -31,13 +32,13 @@ NKMongo.start(
 );
 ```
 
-The **database connection** object is saved in the **NKMongo Object**. Indexed by the database **name**, so there is a caveat to not use the same database name across distinct servers.
+The **database connection** object is saved in the **Object**. Indexed by the database **name**, so do not use the same database name across distinct servers.
 
 Example:
 ```node
-const NKMongo = require( 'nk-mongo' )
+const Mongo = require( 'gmongo' )
 
-NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, errorMessage ) => {
+Mongo.start( false, 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, errorMessage ) => {
   //Super duper awesome code here!
   console.log( isError, errorMessage )
 })
@@ -47,9 +48,9 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError, er
 
 WHAT?! Yes, you can connect to multiple servers in the same core, using them as objects for real-time compliances, for example:
 ```node
-const NKMongo = require( 'nk-mongo' )
+const Mongo = require( 'gmongo' )
 
-NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, errorMessage1 ) => NKMongo.start( 'RemoteDB1', 'remote.mydomain.com', 27017, null, null, null, ( isError2, errorMessage2 ) => NKMongo.start( 'RemoteDB2', 'remote2.mydomain.com', 27017, null, null, null, ( isError3, errorMessage3 ) => {
+Mongo.start( false, 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, errorMessage1 ) => Mongo.start( false, 'RemoteDB1', 'remote.mydomain.com', 27017, null, null, null, ( isError2, errorMessage2 ) => Mongo.start( false, 'RemoteDB2', 'remote2.mydomain.com', 27017, null, null, null, ( isError3, errorMessage3 ) => {
   //Even more super duper awesome code here!
   console.log( isError1, errorMessage1, isError2, errorMessage2, isError3, errorMessage3 )
 })))
@@ -58,9 +59,9 @@ NKMongo.start( 'MyDatabase', '127.0.0.1', 27017, null, null, null, ( isError1, e
 
 ## Common Utility Functions
 
-### To INSERT a new row or a set of rows, use NKMongo.insert():
+### To INSERT a new row or a set of rows, use Mongo.insert()
 ```
-NKMongo.insert( 
+Mongo.insert( 
   <Database Name>, //String 
   <Collection Name>, //String
   <ROW OR ROWS>, //A single Object to insert one, or an Array of Objects to insert many
@@ -70,7 +71,7 @@ NKMongo.insert(
 
 Example:
 ```node
-NKMongo.insert( 'MyDatabase', 'users', 
+Mongo.insert( 'MyDatabase', 'users', 
   { 
     username: 'jose', 
     pass: '123', 
@@ -80,9 +81,9 @@ NKMongo.insert( 'MyDatabase', 'users',
   () => console.log( 'all done' ) )
 ```
 
-### To DELETE rows from the collection, use NKMongo.delete():
+### To DELETE rows from the collection, use Mongo.delete()
 ```
-NKMongo.delete(
+Mongo.delete(
   <Database Name>, //String 
   <Collection Name>, //String
   <DATA TO REMOVE>, //Object
@@ -91,16 +92,16 @@ NKMongo.delete(
 ```
 Example:
 ```node
-NKMongo.delete( 'MyDatabase', 'users', 
+Mongo.delete( 'MyDatabase', 'users', 
   { 
-    myuser: NKMongo.id( user._id ) 
+    myuser: Mongo.id( user._id ) 
   }, 
   () => console.log( 'all done' ) )
 ```
 
-### To UPDATE rows in the collection use NKMongo.update: 
+### To UPDATE rows in the collection use Mongo.update 
 ```
-NKMongo.update(
+Mongo.update(
   <Database Name>, //String 
   <Collection Name>, //String
   <DATA TO UPDATE>, //Object
@@ -110,7 +111,7 @@ NKMongo.update(
 ```
 Example:
 ```node
-NKMongo.update( 'MyDatabase', 'users', 
+Mongo.update( 'MyDatabase', 'users', 
   { 
     active: false 
   }, 
@@ -121,9 +122,9 @@ NKMongo.update( 'MyDatabase', 'users',
 )
 ```
 
-### To QUERY the collection use NKMongo.query():
+### To QUERY the collection use Mongo.query()
 ```
-NKMongo.query(
+Mongo.query(
   <Database Name>, //String 
   <Collection Name>, //String
   <QUERY>, //Object
@@ -132,7 +133,7 @@ NKMongo.query(
 ```
 Example:
 ```node
-NKMongo.query( 'MyDatabase', 'users', 
+Mongo.query( 'MyDatabase', 'users', 
   { 
     active: true 
   }, 
@@ -140,9 +141,9 @@ NKMongo.query( 'MyDatabase', 'users',
 )
 ```
 
-### To QUERY with a SORT use NKMongo.querySort:
+### To QUERY with a SORT use Mongo.querySort
 ```
-NKMongo.querySort(
+Mongo.querySort(
   <Database Name>, //String 
   <Collection Name>, //String
   <SORT BY>, //Object
@@ -152,16 +153,16 @@ NKMongo.querySort(
 ```
 Example:
 ```node
-NKMongo.querySort( 'MyDatabase', 'users', 
+Mongo.querySort( 'MyDatabase', 'users', 
   { added: 1 }, 
   { active: true }, 
 rowsFromQuery => console.log( rowsFromQuery ) )
 ```
 
 
-### To QUERY with a SORT and LIMIT, use NKMongo.queryLimitSort:
+### To QUERY with a SORT and LIMIT, use Mongo.queryLimitSort
 ```
-NKMongo.queryLimitSort(
+Mongo.queryLimitSort(
   <Database Name>, //String 
   <Collection Name>, //String
   <LIMIT>, //Number
@@ -172,7 +173,7 @@ NKMongo.queryLimitSort(
 ```
 Example
 ```node
-NKMongo.queryLimitSort( 'MyDatabase', 'users', 
+Mongo.queryLimitSort( 'MyDatabase', 'users', 
   100, 
   { added: 1 }, 
   { active: true }, 
@@ -180,10 +181,10 @@ NKMongo.queryLimitSort( 'MyDatabase', 'users',
 )
 ```
 
-### For a SINGLE QUERY the collection use NKMongo.singleQuery():
+### For a SINGLE QUERY the collection use Mongo.singleQuery()
 Note: singleQuery should only ever query **ONE ROW**.
 ```
-NKMongo.singleQuery(
+Mongo.singleQuery(
   <Database Name>, //String 
   <Collection Name>, //String
   <QUERY>, //Object
@@ -192,24 +193,24 @@ NKMongo.singleQuery(
 ```
 Example:
 ```node
-NKMongo.singleQuery( 'MyDatabase', 'users', 
+Mongo.singleQuery( 'MyDatabase', 'users', 
   { 
-    myuser: NKMongo.id( user._id ) 
+    myuser: Mongo.id( user._id ) 
   }, 
   rowFromQuery => console.log( rowFromQuery ) 
 )
 ```
 This **singleQuery** is very useful in the authentication methods, e.g.
 ```node
-NKMongo.singleQuery( 'MyDatabase', 'users', 
+Mongo.singleQuery( 'MyDatabase', 'users', 
   { loginSessionKey: req.sessionKey }, 
   rowFromQuery => res.json( rowFromQuery? true: false ) 
 )
 ```
 
-### To JOIN a SINGLE COLLECTION to another, use NKMongo.join()
+### To JOIN a SINGLE COLLECTION to another, use Mongo.join()
 ```
-NKMongo.singleQuery(
+Mongo.singleQuery(
   <Database Name>, //String 
   <Collection Name>, //String
   <Collection ID Field>, //String
@@ -223,20 +224,20 @@ NKMongo.singleQuery(
 ```
 Example:
 ```node
-NKMongo.join( 'MyDatabase', 'users', 
+Mongo.join( 'MyDatabase', 'users', 
   '_id', 
   'photos',
   'user_id', 
   'photos', 
   { added: 1 }, 
-  { myuser: NKMongo.id( user._id ) }, 
+  { myuser: Mongo.id( user._id ) }, 
   rowsFromQuery => console.log( rowsFromQuery ) 
 )
 ```
 
-### To QUERY, and perform a LIST of JOINS defined in the query, use NKMongo.joinsLimit():
+### To QUERY, and perform a LIST of JOINS defined in the query, use Mongo.joinsLimit()
 ```
-NKMongo.joinsLimit(
+Mongo.joinsLimit(
   <Database Name>, //String 
   <Collection Name>, //String
   <JOINS>, //Array of Objects
@@ -253,7 +254,7 @@ const joins = [
   { from: 'history', field: '_id', fromField: 'user_id', as: 'transactions' }
 ];
 
-NKMongo.joinsLimit( 'MyDatabase', 'users', 
+Mongo.joinsLimit( 'MyDatabase', 'users', 
   joins, 
   100, 
   { added: 1 }, 
@@ -292,7 +293,7 @@ It is not always enough to run `apt install mongo` ... we need to follow a set o
   mongo --port 27017 -u "userName" -p "newUserPassowrd" --authenticationDatabase "admin"
   ```
 
-  Edit the configuration file, in two places:
+  Edit the configuration file, in two places
   ```bash
   nano /etc/mongodb.conf
   ```
@@ -320,7 +321,7 @@ It is not always enough to run `apt install mongo` ... we need to follow a set o
 
 
 ### Notes: 
-#### If you would like to see the connections
+#### If you would like to watch the connections
 ```bash
 tail -f /var/log/mongodb/mongodb.log
 ```

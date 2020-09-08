@@ -1,21 +1,21 @@
 {
-  "name": "nk-mongo",
-  "version": "1.0.17",
-  "description": "MongoDB Connection Class for the NK Node Package",
+  "name": "gmongo",
+  "version": "1.1.0",
+  "description": "MongoDB Connection Class",
   "main": "mongo.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Encke/NK-Mongo.git"
+    "url": "git://github.com/GnomeGroup/gmongo.git"
   },
-  "author": "Encke Technologies SRL",
+  "author": "Gnome Tech",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Encke/NK-Mongo/issues"
+    "url": "https://github.com/GnomeGroup/gmongo/issues"
   },
-  "homepage": "https://github.com/Encke/NK-Mongo#readme",
+  "homepage": "https://github.com/GnomeGroup/gmongo#readme",
   "dependencies": {
     "mongodb": "^3.5.9"
   }
