@@ -24,10 +24,11 @@ Mongo.start(
   <Is Atlas DB>, //Boolean
   <Database Name>, //String
   <IP>, //String
-  <Port>, //Number
-  <User>, //String
-  <Password>, //String
-  <Timeout in milliseconds>, //Number
+  <Port>, //Number or NULL
+  <User>, //String or NULL
+  <Password>, //String or NULL
+  <x509 Certificate Path>, //String or NULL
+  <Timeout in milliseconds>, //Number or NULL
   <Callback> //Function
 );
 ```
