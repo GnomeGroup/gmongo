@@ -27,8 +27,13 @@ const db = {
 			db.connect( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback )
 		}
 	},
-	connect: ( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback ) => 
-		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): DEFAULT_CONNECTION_TIMEOUT ), useNewUrlParser: true, useUnifiedTopology: true },
+	connect: ( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback ) => {
+		let connectOptions = { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): DEFAULT_CONNECTION_TIMEOUT ), useNewUrlParser: true, useUnifiedTopology: true }
+		if( x509 )	{
+			connectOptions.tls = true
+			connectOptions.tlsCertificateKeyFile = x509
+		}
+		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), connectOptions,
 			( err, dataBase ) => {
 				if( !err && dataBase )	{
 					db.databaseList[dbName] = dataBase.db( dbName )
@@ -37,7 +42,8 @@ const db = {
 				}	else	{
 					callback( true, err )
 				}
-	}),
+		})
+	},
 	insert: ( dbName, table, rowOrRows, callback ) => {
 		if( db.databaseList[dbName] )	{
 			if( db.insertList[table] )	{
