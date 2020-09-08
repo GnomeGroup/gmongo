@@ -11,23 +11,23 @@ const db = {
 	updateList: {},
 	databaseList: {},
 	id: name => objectid( name ),
-	start: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => {
+	start: ( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback ) => {
 		if( Array.isArray( dbName ) )	{
 			let Databases = JSON.parse( JSON.stringify( dbName ) )
 			const connectDB = _=> {
 				const thisDB = ( ( Databases && ( Databases.length > 0 ) )? Databases.shift(): null )
 				if( thisDB )  {
-					db.connect( isAtlas, thisDB, ip, port, user, pass, timeoutInMS, connectDB )
+					db.connect( isAtlas, thisDB, ip, port, user, pass, x509, timeoutInMS, connectDB )
 				}	else {
 					callback( false, null )
 				}
 			}
 			connectDB()
 		}	else {
-			db.connect( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback )
+			db.connect( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback )
 		}
 	},
-	connect: ( isAtlas, dbName, ip, port, user, pass, timeoutInMS, callback ) => 
+	connect: ( isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS, callback ) => 
 		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), { serverSelectionTimeoutMS: ( timeoutInMS? parseInt( timeoutInMS ): DEFAULT_CONNECTION_TIMEOUT ), useNewUrlParser: true, useUnifiedTopology: true },
 			( err, dataBase ) => {
 				if( !err && dataBase )	{
@@ -35,7 +35,7 @@ const db = {
 					db.databaseList[dbName].collection( dbName )
 					callback( false, null )
 				}	else	{
-					callback( true, err, ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ) )
+					callback( true, err )
 				}
 	}),
 	insert: ( dbName, table, rowOrRows, callback ) => {
