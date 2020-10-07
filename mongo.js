@@ -33,7 +33,7 @@ const db = {
 			connectOptions.tls = true
 			connectOptions.tlsCertificateKeyFile = x509
 		}
-		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' + ( x509? '&authMechanism=MONGODB-X509': '' ) ), connectOptions,
+		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' + ( x509? '&authMechanism=MONGODB-X509&ssl=true': '' ) ), connectOptions,
 			( err, dataBase ) => {
 				if( !err && dataBase )	{
 					db.databaseList[dbName] = dataBase.db( dbName )
