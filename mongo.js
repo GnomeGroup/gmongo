@@ -33,7 +33,7 @@ const db = {
 			connectOptions.tls = true
 			connectOptions.tlsCertificateKeyFile = x509
 		}
-		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' ), connectOptions,
+		mongo.connect( ( 'mongodb' + ( isAtlas? '+srv': '' ) + '://' + ( user? escape( user ): '' ) + ( ( user && pass )? ':': '' ) + ( pass? escape( pass ): '' ) + ( ( user || pass )? '@': '' ) + escape( ip ) + ( isAtlas? '': ( ':' + parseInt( port ).toString() ) ) + '/' + escape( dbName ) + '?retryWrites=true&w=majority' + ( x509? '&authMechanism=MONGODB-X509': '' ) ), connectOptions,
 			( err, dataBase ) => {
 				if( !err && dataBase )	{
 					db.databaseList[dbName] = dataBase.db( dbName )
@@ -121,21 +121,7 @@ const db = {
 	join: ( dbName, table, tableIDField, joinTo, joinToIDField, joinedToElement, sortBy, query, callback ) => {
 		if( db.databaseList[dbName] )	{
 			db.databaseList[dbName].collection( table, ( err, collection ) => {
-				let lkData = { $lookup: { from: joinTo, localField: tableIDField, foreignField: joinToIDField, as: joinedToElement } }
-				collection.aggregate( [ lkData, { $match: query } ], { $sort: sortBy } ).toArray( ( err, items ) => callback( items ) )
-			});
-		}
-	},
-	joinsLimit: ( dbName, table, joins, max, sortBy, query, callback ) => {
-		if( db.databaseList[dbName] )	{
-			db.databaseList[dbName].collection( table, ( err, collection ) => {
-				let lookupdata = []
-				for( let i = 0; i < joins.length; i++ )	{
-					let lookupDataItem = { from: joins[i].from, localField: joins[i].field, foreignField: joins[i].fromField, as: joins[i].name }
-					lookupdata.push( { $lookup: lookupDataItem } )
-				}
-				lookupdata.push( { $match: query } )
-				collection.aggregate( lookupdata, { $sort: sortBy, $limit: max } ).toArray( ( err, items ) => callback( items ) )
+				collection.aggregate( [ { $match: query }, { $lookup: { from: joinTo, localField: tableIDField, foreignField: joinToIDField, as: joinedToElement } }, { $sort: sortBy } ] ).toArray( ( err, items ) => callback( items ) )
 			})
 		}
 	},
