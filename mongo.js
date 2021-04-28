@@ -205,6 +205,27 @@ const db = {
       )
     }
   },
+  querySort: (dbName, table, sortBy, query, callback) => {
+    if (db.databaseList[dbName]) {
+      db.databaseList[dbName].collection(table, (err, collection) =>
+        collection
+          .find(query)
+          .sort(sortBy)
+          .toArray((err, items) => callback(items))
+      )
+    }
+  },
+  queryLimitSort: (dbName, table, max, sortBy, query, callback) => {
+    if (db.databaseList[dbName]) {
+      db.databaseList[dbName].collection(table, (err, collection) =>
+        collection
+          .find(query)
+          .limit(max)
+          .sort(sortBy)
+          .toArray((err, items) => callback(items))
+      )
+    }
+  },
   join: (
     dbName,
     table,
@@ -233,27 +254,6 @@ const db = {
           ])
           .toArray((err, items) => callback(items))
       })
-    }
-  },
-  querySort: (dbName, table, sortBy, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection
-          .find(query)
-          .sort(sortBy)
-          .toArray((err, items) => callback(items))
-      )
-    }
-  },
-  queryLimitSort: (dbName, table, max, sortBy, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection
-          .find(query)
-          .limit(max)
-          .sort(sortBy)
-          .toArray((err, items) => callback(items))
-      )
     }
   },
   bulk: {
