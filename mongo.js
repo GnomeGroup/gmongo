@@ -256,6 +256,27 @@ const db = {
       })
     }
   },
+  joins: (dbName, table, joinedToList, sortBy, query, callback) => {
+    if (db.databaseList[dbName]) {
+      db.databaseList[dbName].collection(table, (err, collection) => {
+        let aggregrateList = [{ $match: query }]
+        for (let i = 0; i < joinedToList.length; i++) {
+          aggregrateList.push({
+            $lookup: {
+              from: joinedToList[i].to.name,
+              localField: joinedToList[i].from,
+              foreignField: joinedToList[i].to.id,
+              as: joinedToList[i].name
+            }
+          })
+        }
+        aggregrateList.push({ $sort: sortBy })
+        collection
+          .aggregate(aggregrateList)
+          .toArray((err, items) => callback(items))
+      })
+    }
+  },
   bulk: {
     object: null,
     start: (dbName, table) => {
