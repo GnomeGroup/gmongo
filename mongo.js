@@ -105,7 +105,7 @@ const db = {
         reject('No Connection')
       }
     }),
-  querySort: (dbName, table, sort, query, callback) =>
+  querySort: (dbName, table, sort, query) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
@@ -118,7 +118,7 @@ const db = {
         reject('No Connection')
       }
     }),
-  queryLimitSort: (dbName, table, max, sort, query, callback) =>
+  queryLimitSort: (dbName, table, max, sort, query) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
