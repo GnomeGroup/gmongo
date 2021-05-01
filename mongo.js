@@ -1,7 +1,16 @@
 const mongo = require('mongodb').MongoClient
-const objectid = require('mongodb').ObjectID
+const objectId = require('./services/objectId')
+const connect = require('./services/connect')
 
-const DEFAULT_CONNECTION_TIMEOUT = 30000
+const CFG = require('./config/')
+
+const resFmt = (err, result, resolve, reject) => {
+  if (err) {
+    reject(err)
+  } else {
+    resolve(result)
+  }
+}
 
 const db = {
   db: null,
@@ -10,222 +19,119 @@ const db = {
   deleteList: {},
   updateList: {},
   databaseList: {},
-  id: name => objectid(name),
-  start: (
-    isAtlas,
-    dbName,
-    ip,
-    port,
-    user,
-    pass,
-    x509,
-    timeoutInMS,
-    callback
-  ) => {
-    if (Array.isArray(dbName)) {
-      let Databases = JSON.parse(JSON.stringify(dbName))
+  id: name => objectId(name),
+  start: (isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS) =>
+    new Promise((resolve, reject) => {
+      if (!Array.isArray(dbName)) {
+        dbName = [dbName]
+      }
       const connectDB = _ => {
-        const thisDB =
-          Databases && Databases.length > 0 ? Databases.shift() : null
+        const thisDB = dbName && dbName.length > 0 ? dbName.shift() : null
         if (thisDB) {
-          db.connect(
-            isAtlas,
-            thisDB,
-            ip,
-            port,
-            user,
-            pass,
-            x509,
-            timeoutInMS,
-            connectDB
-          )
+          connect(isAtlas, thisDB, ip, port, user, pass, x509, timeoutInMS)
+            .then(dbObject => {
+              db.databaseList[thisDB] = dbObject
+              connectDB()
+            })
+            .catch(err => {
+              console.log('Database Connection Error', err)
+              reject()
+            })
         } else {
-          callback(false, null)
+          resolve()
         }
       }
       connectDB()
-    } else {
-      db.connect(
-        isAtlas,
-        dbName,
-        ip,
-        port,
-        user,
-        pass,
-        x509,
-        timeoutInMS,
-        callback
-      )
-    }
-  },
-  connect: (
-    isAtlas,
-    dbName,
-    ip,
-    port,
-    user,
-    pass,
-    x509,
-    timeoutInMS,
-    callback
-  ) => {
-    let connectOptions = {
-      serverSelectionTimeoutMS: timeoutInMS
-        ? parseInt(timeoutInMS)
-        : DEFAULT_CONNECTION_TIMEOUT,
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    }
-    if (x509) {
-      connectOptions.tls = true
-      connectOptions.tlsCertificateKeyFile = x509
-    }
-    mongo.connect(
-      'mongodb' +
-        (isAtlas ? '+srv' : '') +
-        '://' +
-        (user ? escape(user) : '') +
-        (user && pass ? ':' : '') +
-        (pass ? escape(pass) : '') +
-        (user || pass ? '@' : '') +
-        escape(ip) +
-        (isAtlas ? '' : ':' + parseInt(port).toString()) +
-        '/' +
-        escape(dbName) +
-        '?retryWrites=true&w=majority' +
-        (x509 ? '&authMechanism=MONGODB-X509&ssl=true' : ''),
-      connectOptions,
-      (err, dataBase) => {
-        if (!err && dataBase) {
-          db.databaseList[dbName] = dataBase.db(dbName)
-          db.databaseList[dbName].collection(dbName)
-          callback(false, null)
-        } else {
-          callback(true, err)
-        }
-      }
-    )
-  },
-  insert: (dbName, table, rowOrRows, callback) => {
-    if (db.databaseList[dbName]) {
-      if (db.insertList[table]) {
-        setTimeout(
-          _ => db.insert(dbName, table, rowOrRows, callback),
-          db.retryTimeout
-        )
-      } else {
-        db.databaseList[dbName].collection(table, (err, collection) => {
-          if (Array.isArray(rowOrRows)) {
-            db.insertList[table] = 1
-            collection.insertMany(rowOrRows, (err, result) =>
-              db.insertDone(table, callback, err ? null : result)
-            )
-          } else {
-            db.insertList[table] = 1
-            collection.insertOne(rowOrRows, (err, result) =>
-              db.insertDone(table, callback, err ? null : result.insertedId)
-            )
-          }
-        })
-      }
-    }
-  },
-  insertDone: (table, callback, insertedId) => {
-    if (db.insertList[table]) {
-      db.insertList[table]--
-      if (db.insertList[table] < 1) {
-        delete db.insertList[table]
-      }
-    }
-    if (callback) {
-      callback(insertedId)
-    }
-  },
-  delete: (dbName, table, dataToRemove, callback) => {
-    if (db.databaseList[dbName]) {
-      if (db.deleteList[table]) {
-        setTimeout(
-          _ => db.delete(dbName, table, dataToRemove, callback),
-          db.retryTimeout
-        )
-      } else {
-        db.deleteList[table] = true
+    }),
+  insert: (dbName, table, rowOrRows) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
-          collection.deleteMany(dataToRemove, _ =>
-            db.deleteDone(table, callback)
+          collection[
+            Array.isArray(rowOrRows) ? 'insertMany' : 'insertOne'
+          ](rowOrRows, (err, result) => resFmt(err, result, resolve, reject))
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
+  delete: (dbName, table, dataToRemove) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) =>
+          collection.deleteMany(dataToRemove, (err, result) =>
+            resFmt(err, result, resolve, reject)
           )
         )
-      }
-    }
-  },
-  deleteDone: (table, callback) => {
-    if (db.deleteList[table]) {
-      delete db.deleteList[table]
-    }
-    if (callback) {
-      callback()
-    }
-  },
-  update: (dbName, table, dataToUpdate, newData, callback) => {
-    if (db.databaseList[dbName]) {
-      if (db.updateList[table]) {
-        setTimeout(
-          _ => db.update(dbName, table, dataToUpdate, newData, callback),
-          db.retryTimeout
-        )
       } else {
-        db.updateList[table] = true
+        reject('No Connection')
+      }
+    }),
+  update: (dbName, table, dataToUpdate, newData) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
-          collection.updateMany(dataToUpdate, { $set: newData }, _ =>
-            db.updateDone(table, callback)
+          collection.updateMany(
+            dataToUpdate,
+            { $set: newData },
+            (err, result) => resFmt(err, result, resolve, reject)
           )
         )
+      } else {
+        reject('No Connection')
       }
-    }
-  },
-  updateDone: (table, callback) => {
-    if (db.updateList[table]) {
-      delete db.updateList[table]
-    }
-    if (callback) {
-      callback()
-    }
-  },
-  singleQuery: (dbName, table, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection.findOne(query, (err, item) => callback(item))
-      )
-    }
-  },
-  query: (dbName, table, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection.find(query).toArray((err, items) => callback(items))
-      )
-    }
-  },
-  querySort: (dbName, table, sortBy, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection
-          .find(query)
-          .sort(sortBy)
-          .toArray((err, items) => callback(items))
-      )
-    }
-  },
-  queryLimitSort: (dbName, table, max, sortBy, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) =>
-        collection
-          .find(query)
-          .limit(max)
-          .sort(sortBy)
-          .toArray((err, items) => callback(items))
-      )
-    }
-  },
+    }),
+  singleQuery: (dbName, table, query) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) =>
+          collection.findOne(query, (err, result) =>
+            resFmt(err, result, resolve, reject)
+          )
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
+  query: (dbName, table, query) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) =>
+          collection
+            .find(query)
+            .toArray((err, result) => resFmt(err, result, resolve, reject))
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
+  querySort: (dbName, table, sort, query, callback) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) =>
+          collection
+            .find(query)
+            .sort(sort)
+            .toArray((err, result) => resFmt(err, result, resolve, reject))
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
+  queryLimitSort: (dbName, table, max, sort, query, callback) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) =>
+          collection
+            .find(query)
+            .limit(max)
+            .sort(sort)
+            .toArray((err, result) => resFmt(err, result, resolve, reject))
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
   join: (
     dbName,
     table,
@@ -233,101 +139,115 @@ const db = {
     joinTo,
     joinToIDField,
     joinedToElement,
-    sortBy,
-    query,
-    callback
-  ) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) => {
-        collection
-          .aggregate([
-            { $match: query },
-            {
-              $lookup: {
-                from: joinTo,
-                localField: tableIDField,
-                foreignField: joinToIDField,
-                as: joinedToElement
-              }
-            },
-            { $sort: sortBy }
-          ])
-          .toArray((err, items) => callback(items))
-      })
-    }
-  },
-  joins: (dbName, table, joinedToList, sortBy, query, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) => {
-        let aggregrateList = [{ $match: query }]
-        for (let i = 0; i < joinedToList.length; i++) {
-          aggregrateList.push({
+    sort,
+    query
+  ) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.aggregate(dbName, table, query, sort, [
+          {
             $lookup: {
-              from: joinedToList[i].to.name,
-              localField: joinedToList[i].from,
-              foreignField: joinedToList[i].to.id,
-              as: joinedToList[i].name
+              from: joinTo,
+              localField: tableIDField,
+              foreignField: joinToIDField,
+              as: joinedToElement
             }
-          })
-        }
-        aggregrateList.push({ $sort: sortBy })
-        collection
-          .aggregate(aggregrateList)
-          .toArray((err, items) => callback(items))
-      })
-    }
-  },
-  aggregate: (dbName, table, query, sortBy, aggregates, callback) => {
-    if (db.databaseList[dbName]) {
-      db.databaseList[dbName].collection(table, (err, collection) => {
-        if (query) {
-          aggregates.unshift({ $match: query })
-        }
-        if (sortBy) {
-          aggregates.push({ $sort: sortBy })
-        }
-        collection
-          .aggregate(aggregates)
-          .toArray((err, items) => callback(items))
-      })
-    }
-  },
-  bulk: {
-    object: null,
-    start: (dbName, table) => {
-      db.bulk.object = null
-      if (
-        db.databaseList &&
-        db.databaseList[dbName] &&
-        db.databaseList[dbName].collection &&
-        db.databaseList[dbName].collection[table]
-      ) {
-        db.bulk.object = db.databaseList[dbName].collection[
-          table
-        ].initializeUnorderedBulkOp()
+          }
+        ])
+          .then(result => resolve(result))
+          .catch(err => reject(err))
+      } else {
+        reject('No Connection')
       }
-    },
-    insert: data => {
-      if (db.bulk.object) {
-        db.bulk.object.insert(data)
+    }),
+  joins: (dbName, table, joinedToList, sort, query) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) => {
+          let aggregrateList = []
+          for (let i = 0; i < joinedToList.length; i++) {
+            aggregrateList.push({
+              $lookup: {
+                from: joinedToList[i].to.name,
+                localField: joinedToList[i].from,
+                foreignField: joinedToList[i].to.id,
+                as: joinedToList[i].name
+              }
+            })
+          }
+          db.aggregate(dbName, table, query, sort, aggregrateList)
+            .then(result => resolve(result))
+            .catch(err => reject(err))
+        })
+      } else {
+        reject('No Connection')
       }
-    },
-    update: (query, data) => {
-      if (db.bulk.object) {
-        db.bulk.object.find(query).update({ $set: data })
+    }),
+  aggregate: (dbName, table, query, sort, aggregates) =>
+    new Promise((resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        db.databaseList[dbName].collection(table, (err, collection) => {
+          if (query) {
+            aggregates.unshift({ $match: query })
+          }
+          if (sort) {
+            aggregates.push({ $sort: sort })
+          }
+          collection
+            .aggregate(aggregates)
+            .toArray((err, result) => resFmt(err, result, resolve, reject))
+        })
+      } else {
+        reject('No Connection')
       }
-    },
-    remove: query => {
-      if (db.bulk.object) {
-        db.bulk.object.find(query).remove()
-      }
-    },
-    run: _ => {
-      if (db.bulk.object) {
-        db.bulk.object.execute()
-      }
-    }
-  }
+    })
 }
 
 module.exports = db
+/*
+const connectNOW = async _ => {
+  const response = await db.start(
+    true,
+    'QuickLook',
+    'clarowebsite.gv53t.mongodb.net',
+    null,
+    'rldyAccess',
+    'MllwrWjXVT5MtzFM',
+    null,
+    20000
+  )
+  console.log(response)
+}
+
+console.log(connectNOW())
+*/
+
+const timeoutPromise = interval =>
+  new Promise((resolve, reject) => {
+    setTimeout(function() {
+      resolve('done')
+    }, interval)
+  })
+
+async function timeTest() {
+  await db.start(
+    true,
+    'QuickLook',
+    'clarowebsite.gv53t.mongodb.net',
+    null,
+    'rldyAccess',
+    'MllwrWjXVT5MtzFM',
+    null,
+    20000
+  )
+  await timeoutPromise(3000)
+}
+
+let startTime = Date.now()
+timeTest().then(() => {
+  let finishTime = Date.now()
+  let timeTaken = finishTime - startTime
+  console.log('Time taken in milliseconds: ' + timeTaken)
+  console.log(db.databaseList)
+  process.exit()
+})
