@@ -39,7 +39,6 @@ module.exports = (
         (x509 ? '&authMechanism=MONGODB-X509&ssl=true' : ''),
       connectOptions,
       (err, dataBase) => {
-        console.log(err, dataBase)
         if (!err && dataBase) {
           const dbObject = dataBase.db(dbName)
           dbObject.collection(dbName)

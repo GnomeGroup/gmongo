@@ -1,6 +1,7 @@
 const mongo = require('mongodb').MongoClient
 const objectId = require('./services/objectId')
 const connect = require('./services/connect')
+const crypto = require('crypto')
 
 const CFG = require('./config/')
 
@@ -204,50 +205,3 @@ const db = {
 }
 
 module.exports = db
-/*
-const connectNOW = async _ => {
-  const response = await db.start(
-    true,
-    'QuickLook',
-    'clarowebsite.gv53t.mongodb.net',
-    null,
-    'rldyAccess',
-    'MllwrWjXVT5MtzFM',
-    null,
-    20000
-  )
-  console.log(response)
-}
-
-console.log(connectNOW())
-*/
-
-const timeoutPromise = interval =>
-  new Promise((resolve, reject) => {
-    setTimeout(function() {
-      resolve('done')
-    }, interval)
-  })
-
-async function timeTest() {
-  await db.start(
-    true,
-    'QuickLook',
-    'clarowebsite.gv53t.mongodb.net',
-    null,
-    'rldyAccess',
-    'MllwrWjXVT5MtzFM',
-    null,
-    20000
-  )
-  await timeoutPromise(3000)
-}
-
-let startTime = Date.now()
-timeTest().then(() => {
-  let finishTime = Date.now()
-  let timeTaken = finishTime - startTime
-  console.log('Time taken in milliseconds: ' + timeTaken)
-  console.log(db.databaseList)
-  process.exit()
-})
