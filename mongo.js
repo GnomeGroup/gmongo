@@ -277,6 +277,21 @@ const db = {
       })
     }
   },
+  aggregate: (dbName, table, query, sortBy, aggregates, callback) => {
+    if (db.databaseList[dbName]) {
+      db.databaseList[dbName].collection(table, (err, collection) => {
+        if (query) {
+          aggregates.unshift({ $match: query })
+        }
+        if (sortBy) {
+          aggregates.push({ $sort: sortBy })
+        }
+        collection
+          .aggregate(aggregates)
+          .toArray((err, items) => callback(items))
+      })
+    }
+  },
   bulk: {
     object: null,
     start: (dbName, table) => {
