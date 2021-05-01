@@ -1,7 +1,6 @@
 const mongo = require('mongodb').MongoClient
 const objectId = require('./services/objectId')
 const connect = require('./services/connect')
-const crypto = require('crypto')
 
 const CFG = require('./config/')
 
