@@ -19,7 +19,8 @@ const db = {
   deleteList: {},
   updateList: {},
   databaseList: {},
-  id: name => objectId(name),
+  id: name =>
+    typeof name != 'string' || name.length % 12 == 0 ? objectId(name) : null,
   start: (isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS) =>
     new Promise((resolve, reject) => {
       if (!Array.isArray(dbName)) {
