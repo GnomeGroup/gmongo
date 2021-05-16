@@ -1,6 +1,7 @@
 const mongo = require('mongodb').MongoClient
 const objectId = require('./services/objectId')
 const connect = require('./services/connect')
+const aes = require('./services/aes')
 
 const CFG = require('./config/')
 
@@ -12,6 +13,16 @@ const resFmt = (err, result, resolve, reject) => {
   }
 }
 
+const decrypt = (rows, columns, key, iv) => {
+  for (let i = 0; i < rows.length; i++) {
+    for (let x in rows[i]) {
+      if (columns.includes(x)) {
+        rows[i][x] = aes.decrypt(key, iv, rows[i][x])
+      }
+    }
+  }
+}
+
 const db = {
   db: null,
   retryTimeout: 100,
@@ -19,6 +30,7 @@ const db = {
   deleteList: {},
   updateList: {},
   databaseList: {},
+  aes: aes,
   id: name =>
     typeof name != 'string' || name.length % 12 == 0 ? objectId(name) : null,
   start: (isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS) =>
@@ -44,9 +56,26 @@ const db = {
       }
       connectDB()
     }),
-  insert: (dbName, table, rowOrRows) =>
+  insert: (dbName, table, rowOrRows, columsOfRowOrRowsToEncrypt, key, iv) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
+        if (columsOfRowOrRowsToEncrypt && key && iv) {
+          if (Array.isArray(columsOfRowOrRowsToEncrypt)) {
+            for (let i = 0; i < columsOfRowOrRowsToEncrypt.length; i++) {
+              for (let x in columsOfRowOrRowsToEncrypt[i]) {
+                rowOrRows[i][x] = aes.encrypt(
+                  key,
+                  iv,
+                  columsOfRowOrRowsToEncrypt[i][x]
+                )
+              }
+            }
+          } else {
+            for (let x in columsOfRowOrRowsToEncrypt) {
+              rowOrRows[x] = aes.encrypt(key, iv, columsOfRowOrRowsToEncrypt[x])
+            }
+          }
+        }
         db.databaseList[dbName].collection(table, (err, collection) =>
           collection[
             Array.isArray(rowOrRows) ? 'insertMany' : 'insertOne'
@@ -82,44 +111,78 @@ const db = {
         reject('No Connection')
       }
     }),
-  singleQuery: (dbName, table, query) =>
+  singleQuery: (dbName, table, query, columnsToDecrypt, key, iv) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
           collection.findOne(query, (err, result) =>
-            resFmt(err, result, resolve, reject)
+            resFmt(
+              err,
+              result && !err && columnsToDecrypt && key && iv
+                ? decrypt([result], columnsToDecrypt, key, iv)[0]
+                : result,
+              resolve,
+              reject
+            )
           )
         )
       } else {
         reject('No Connection')
       }
     }),
-  query: (dbName, table, query) =>
+  query: (dbName, table, query, columnsToDecrypt, key, iv) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
           collection
             .find(query)
-            .toArray((err, result) => resFmt(err, result, resolve, reject))
+            .toArray((err, result) =>
+              resFmt(
+                err,
+                result && result.length > 0 && columnsToDecrypt && key && iv
+                  ? decrypt(result, columnsToDecrypt, key, iv)
+                  : result,
+                resolve,
+                reject
+              )
+            )
         )
       } else {
         reject('No Connection')
       }
     }),
-  querySort: (dbName, table, sort, query) =>
+  querySort: (dbName, table, sort, query, columnsToDecrypt, key, iv) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
           collection
             .find(query)
             .sort(sort)
-            .toArray((err, result) => resFmt(err, result, resolve, reject))
+            .toArray((err, result) =>
+              resFmt(
+                err,
+                result && result.length > 0 && columnsToDecrypt && key && iv
+                  ? decrypt(result, columnsToDecrypt, key, iv)
+                  : result,
+                resolve,
+                reject
+              )
+            )
         )
       } else {
         reject('No Connection')
       }
     }),
-  queryLimitSort: (dbName, table, max, sort, query) =>
+  queryLimitSort: (
+    dbName,
+    table,
+    max,
+    sort,
+    query,
+    columnsToDecrypt,
+    key,
+    iv
+  ) =>
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         db.databaseList[dbName].collection(table, (err, collection) =>
@@ -127,7 +190,16 @@ const db = {
             .find(query)
             .limit(max)
             .sort(sort)
-            .toArray((err, result) => resFmt(err, result, resolve, reject))
+            .toArray((err, result) =>
+              resFmt(
+                err,
+                result && result.length > 0 && columnsToDecrypt && key && iv
+                  ? decrypt(result, columnsToDecrypt, key, iv)
+                  : result,
+                resolve,
+                reject
+              )
+            )
         )
       } else {
         reject('No Connection')
