@@ -2,14 +2,22 @@ const crypto = require('crypto')
 
 module.exports = {
   encrypt: (key, iv, plainData) => {
-    const encipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+    const encipher = crypto.createCipheriv(
+      'aes-256-cbc',
+      Buffer.from(key, 'hex'),
+      Buffer.from(iv, 'hex')
+    )
     return Buffer.from(
       encipher.update(plainData, 'utf8', 'binary') + encipher.final('binary'),
       'binary'
     ).toString('base64')
   },
   decrypt: (key, iv, encrypted) => {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+    const decipher = crypto.createDecipheriv(
+      'aes-256-cbc',
+      Buffer.from(key, 'hex'),
+      Buffer.from(iv, 'hex')
+    )
     return (
       decipher.update(
         Buffer.from(encrypted, 'base64').toString('binary'),
