@@ -21,6 +21,7 @@ const decrypt = (rows, columns, key, iv) => {
       }
     }
   }
+  return rows
 }
 
 const db = {
