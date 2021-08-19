@@ -1,5 +1,11 @@
 const crypto = require('crypto')
 
+const getBufferFromData = (bytes, data) => {
+  const newData = Buffer.alloc(bytes)
+  newData.write(data, 'utf-8')
+  return newData.toString('hex')
+}
+
 module.exports = {
   encrypt: (key, iv, plainData) => {
     const encipher = crypto.createCipheriv(
@@ -32,5 +38,9 @@ module.exports = {
       .createHash('sha256')
       .update(crypto.randomBytes(256))
       .digest()
-      .toString('hex')
+      .toString('hex'),
+  format: {
+    iv: value => getBufferFromData(16, value),
+    key: value => getBufferFromData(32, value)
+  }
 }
