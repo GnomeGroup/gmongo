@@ -61,19 +61,23 @@ const db = {
     new Promise((resolve, reject) => {
       if (db.databaseList[dbName]) {
         if (columsOfRowOrRowsToEncrypt && key && iv) {
-          if (Array.isArray(columsOfRowOrRowsToEncrypt)) {
-            for (let i = 0; i < columsOfRowOrRowsToEncrypt.length; i++) {
-              for (let x in columsOfRowOrRowsToEncrypt[i]) {
-                rowOrRows[i][x] = aes.encrypt(
+          if (Array.isArray(rowOrRows)) {
+            for (let i = 0; i < rowOrRows.length; i++) {
+              for (let n = 0; n < columsOfRowOrRowsToEncrypt.length; n++) {
+                rowOrRows[i][columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
                   key,
                   iv,
-                  columsOfRowOrRowsToEncrypt[i][x]
+                  rowOrRows[i][columsOfRowOrRowsToEncrypt[n]]
                 )
               }
             }
           } else {
-            for (let x in columsOfRowOrRowsToEncrypt) {
-              rowOrRows[x] = aes.encrypt(key, iv, columsOfRowOrRowsToEncrypt[x])
+            for (let n = 0; n < columsOfRowOrRowsToEncrypt.length; n++) {
+              rowOrRows[columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
+                key,
+                iv,
+                rowOrRows[columsOfRowOrRowsToEncrypt[n]]
+              )
             }
           }
         }
