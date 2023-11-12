@@ -280,15 +280,15 @@ Many times applications require secure secure data at rest for safe storage of p
 To use this feature you first need to define a Key and IV for the encrypted columns selected. Save these to a very safe and not public location for usage in the functions.
 
 ```node
-const key = MGO.aes.makeKey()
-const iv = MGO.aes.makeIv()
+const key = Mongo.aes.makeKey()
+const iv = Mongo.aes.makeIv()
 ```
 
 To make use of the automatic encryption and decryption, please add the following fields to the end of the function as shown in the following example:
 
 ```node
-const key = MGO.aes.makeKey()
-const iv = MGO.aes.makeIv()
+const key = Mongo.aes.makeKey()
+const iv = Mongo.aes.makeIv()
 Mongo.query(
   'TestCollection',
   'TestTable',
