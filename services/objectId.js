@@ -1,3 +1,3 @@
-const objectid = require('mongodb').ObjectID
+const objectid = require('mongodb').ObjectId
 
-module.exports = id => objectid(id)
+module.exports = (id) => new objectid(id)

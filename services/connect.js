@@ -1,51 +1,37 @@
 const mongo = require('mongodb').MongoClient
 
-module.exports = (
-  isAtlas,
-  dbName,
-  ip,
-  port,
-  user,
-  pass,
-  x509,
-  timeoutInMS,
-  callback
-) =>
-  new Promise(function(resolve, reject) {
+module.exports = (isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS) =>
+  new Promise(function (resolve, reject) {
     let connectOptions = {
       serverSelectionTimeoutMS: timeoutInMS
         ? parseInt(timeoutInMS)
         : CFG.defaults.timeout,
-      useNewUrlParser: true,
-      useUnifiedTopology: true
     }
-    if (x509) {
-      connectOptions.tls = true
-      connectOptions.tlsCertificateKeyFile = x509
-    }
-    mongo.connect(
-      'mongodb' +
+    try {
+      const url =
+        'mongodb' +
         (isAtlas ? '+srv' : '') +
         '://' +
-        (user ? escape(user) : '') +
+        (user ? encodeURIComponent(user) : '') +
         (user && pass ? ':' : '') +
-        (pass ? escape(pass) : '') +
+        (pass ? encodeURIComponent(pass) : '') +
         (user || pass ? '@' : '') +
-        escape(ip) +
+        encodeURIComponent(ip) +
         (isAtlas ? '' : ':' + parseInt(port).toString()) +
         '/' +
-        escape(dbName) +
+        encodeURIComponent(dbName) +
         '?retryWrites=true&w=majority' +
-        (x509 ? '&authMechanism=MONGODB-X509&ssl=true' : ''),
-      connectOptions,
-      (err, dataBase) => {
-        if (!err && dataBase) {
-          const dbObject = dataBase.db(dbName)
-          dbObject.collection(dbName)
-          resolve(dbObject)
-        } else {
-          reject(err)
-        }
+        (x509
+          ? '&authMechanism=MONGODB-X509&tls=true&tlsCertificateKeyFile=' +
+            encodeURIComponent(x509)
+          : '&authMechanism=DEFAULT')
+      const dataBase = new mongo(url, connectOptions)
+      if (dataBase) {
+        const dbObject = dataBase.db(dbName)
+        dbObject.collection(dbName)
+        resolve(dbObject)
+        return
       }
-    )
+    } catch (err) {}
+    reject()
   })

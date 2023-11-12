@@ -24,18 +24,22 @@ Mongo is the preferred database format for NodeJS based systems. It supports mul
 
 ### To connect to a server use Mongo.start()
 
-```
+When using a x509 certificate, the path must be a local path on the device, username and password should be null, on the contrary, when using a username and password, the x509 should be null.
+
+```node
+const Mongo = require( 'gmongo' )
+
 Mongo.start(
   <Is Atlas DB>, //Boolean
-  <Database Name>, //String
-  <IP>, //String
+  <Collection Name>, //String
+  <IP or host>, //String
   <Port>, //Number or NULL
   <User>, //String or NULL
   <Password>, //String or NULL
   <x509 Certificate Path>, //String or NULL
   <Timeout in milliseconds>, //Number or NULL
 )
-  .then( _=> console.log('Im Connected!'))
+  .then( ()=> console.log('Im Connected!'))
 ```
 
 Example:
@@ -74,7 +78,7 @@ Mongo.start( false, 'MyDatabase', '127.0.0.1', 27017, null, null, null, 20000 )
 
 ### To INSERT a new row or a set of rows, use Mongo.insert()
 
-```
+```node
 Mongo.insert(
   <Database Name>, //String
   <Collection Name>, //String
@@ -85,17 +89,20 @@ Mongo.insert(
 Example:
 
 ```node
-Mongo.insert('MyDatabase', 'users', {
+const data = {
   username: 'jose',
   pass: '123',
   active: false,
-  added: new Date().getTime()
-}).then(result => console.log('all done'))
+  added: new Date().getTime(),
+}
+Mongo.insert('MyDatabase', 'users', data).then((result) =>
+  console.log('all done', data._id, result.insertedId)
+)
 ```
 
 ### To DELETE rows from the collection, use Mongo.delete()
 
-```
+```node
 Mongo.delete(
   <Database Name>, //String
   <Collection Name>, //String
@@ -107,13 +114,13 @@ Example:
 
 ```node
 Mongo.delete('MyDatabase', 'users', {
-  myuser: Mongo.id(user._id)
-}).then(result => console.log('all done'))
+  myuser: Mongo.id(user._id),
+}).then((result) => console.log('all done'))
 ```
 
 ### To UPDATE rows in the collection use Mongo.update
 
-```
+```node
 Mongo.update(
   <Database Name>, //String
   <Collection Name>, //String
@@ -129,17 +136,17 @@ Mongo.update(
   'MyDatabase',
   'users',
   {
-    active: false
+    active: false,
   },
   {
-    active: true
+    active: true,
   }
-).then(result => console.log('all done'))
+).then((result) => console.log('all done'))
 ```
 
 ### To QUERY the collection use Mongo.query()
 
-```
+```node
 Mongo.query(
   <Database Name>, //String
   <Collection Name>, //String
@@ -151,13 +158,13 @@ Example:
 
 ```node
 Mongo.query('MyDatabase', 'users', {
-  active: true
-}).then(rowsFromQuery => console.log(rowsFromQuery))
+  active: true,
+}).then((rowsFromQuery) => console.log(rowsFromQuery))
 ```
 
 ### To QUERY with a SORT use Mongo.querySort
 
-```
+```node
 Mongo.querySort(
   <Database Name>, //String
   <Collection Name>, //String
@@ -169,17 +176,14 @@ Mongo.querySort(
 Example:
 
 ```node
-Mongo.querySort(
-  'MyDatabase',
-  'users',
-  { added: 1 },
-  { active: true }
-).then(rowsFromQuery => console.log(rowsFromQuery))
+Mongo.querySort('MyDatabase', 'users', { added: 1 }, { active: true }).then(
+  (rowsFromQuery) => console.log(rowsFromQuery)
+)
 ```
 
 ### To QUERY with a SORT and LIMIT, use Mongo.queryLimitSort
 
-```
+```node
 Mongo.queryLimitSort(
   <Database Name>, //String
   <Collection Name>, //String
@@ -198,14 +202,14 @@ Mongo.queryLimitSort(
   100,
   { added: 1 },
   { active: true }
-).then(rowsFromQuery => console.log(rowsFromQuery))
+).then((rowsFromQuery) => console.log(rowsFromQuery))
 ```
 
 ### For a SINGLE QUERY the collection use Mongo.singleQuery()
 
 Note: singleQuery should only ever query **ONE ROW**.
 
-```
+```node
 Mongo.singleQuery(
   <Database Name>, //String
   <Collection Name>, //String
@@ -217,21 +221,21 @@ Example:
 
 ```node
 Mongo.singleQuery('MyDatabase', 'users', {
-  myuser: Mongo.id(user._id)
-}).then(rowFromQuery => console.log(rowFromQuery))
+  myuser: Mongo.id(user._id),
+}).then((rowFromQuery) => console.log(rowFromQuery))
 ```
 
 This **singleQuery** is very useful in the authentication methods, e.g.
 
 ```node
 Mongo.singleQuery('MyDatabase', 'users', {
-  loginSessionKey: req.sessionKey
-}).then(rowsFromQuery => res.json(rowFromQuery ? true : false))
+  loginSessionKey: req.sessionKey,
+}).then((rowsFromQuery) => res.json(rowFromQuery ? true : false))
 ```
 
 ### To JOIN a SINGLE COLLECTION to another, use Mongo.join()
 
-```
+```node
 Mongo.join(
   <Database Name>, //String
   <Collection Name>, //String
@@ -256,7 +260,43 @@ Mongo.join(
   'photos',
   { added: 1 },
   { myuser: Mongo.id(user._id) }
-).then(rowFromQuery => console.log(rowFromQuery))
+).then((rowFromQuery) => console.log(rowFromQuery))
+```
+
+### Adding/Querying Encryption at rest to data queries
+
+Many times applications require secure secure data at rest for safe storage of personal information. This package includes this automatically in the following functions:
+
+| Function       |
+| -------------- |
+| insert         |
+| update         |
+| query          |
+| singleQuery    |
+| querySort      |
+| queryLimitSort |
+| join           |
+
+To use this feature you first need to define a Key and IV for the encrypted columns selected. Save these to a very safe and not public location for usage in the functions.
+
+```node
+const key = MGO.aes.makeKey()
+const iv = MGO.aes.makeIv()
+```
+
+To make use of the automatic encryption and decryption, please add the following fields to the end of the function as shown in the following example:
+
+```node
+const key = MGO.aes.makeKey()
+const iv = MGO.aes.makeIv()
+Mongo.query(
+  'TestCollection',
+  'TestTable',
+  {},
+  ['encryptedColumn'],
+  key,
+  iv
+).then((rowFromQuery) => console.log(rowFromQuery))
 ```
 
 ---

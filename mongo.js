@@ -32,22 +32,22 @@ const db = {
   updateList: {},
   databaseList: {},
   aes: aes,
-  id: name =>
+  id: (name) =>
     typeof name != 'string' || name.length % 12 == 0 ? objectId(name) : null,
   start: (isAtlas, dbName, ip, port, user, pass, x509, timeoutInMS) =>
     new Promise((resolve, reject) => {
       if (!Array.isArray(dbName)) {
         dbName = [dbName]
       }
-      const connectDB = _ => {
+      const connectDB = (_) => {
         const thisDB = dbName && dbName.length > 0 ? dbName.shift() : null
         if (thisDB) {
           connect(isAtlas, thisDB, ip, port, user, pass, x509, timeoutInMS)
-            .then(dbObject => {
+            .then((dbObject) => {
               db.databaseList[thisDB] = dbObject
               connectDB()
             })
-            .catch(err => {
+            .catch((err) => {
               console.log('Database Connection Error', err)
               reject()
             })
@@ -58,7 +58,7 @@ const db = {
       connectDB()
     }),
   insert: (dbName, table, rowOrRows, columsOfRowOrRowsToEncrypt, key, iv) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
         if (columsOfRowOrRowsToEncrypt && key && iv) {
           if (Array.isArray(rowOrRows)) {
@@ -81,98 +81,113 @@ const db = {
             }
           }
         }
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection[
+        const collection = await db.databaseList[dbName].collection(table)
+        resFmt(
+          null,
+          await collection[
             Array.isArray(rowOrRows) ? 'insertMany' : 'insertOne'
-          ](rowOrRows, (err, result) => resFmt(err, result, resolve, reject))
+          ](rowOrRows),
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
       }
     }),
   delete: (dbName, table, dataToRemove) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection.deleteMany(dataToRemove, (err, result) =>
-            resFmt(err, result, resolve, reject)
-          )
-        )
+        const collection = await db.databaseList[dbName].collection(table)
+        resFmt(null, await collection.deleteMany(dataToRemove), resolve, reject)
       } else {
         reject('No Connection')
       }
     }),
-  update: (dbName, table, dataToUpdate, newData) =>
-    new Promise((resolve, reject) => {
+  update: (
+    dbName,
+    table,
+    dataToUpdate,
+    newData,
+    columsOfRowOrRowsToEncrypt,
+    key,
+    iv
+  ) =>
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection.updateMany(
-            dataToUpdate,
-            { $set: newData },
-            (err, result) => resFmt(err, result, resolve, reject)
-          )
+        if (columsOfRowOrRowsToEncrypt && key && iv) {
+          for (let n = 0; n < columsOfRowOrRowsToEncrypt.length; n++) {
+            newData[columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
+              key,
+              iv,
+              newData[columsOfRowOrRowsToEncrypt[n]]
+            )
+          }
+        }
+        const collection = await db.databaseList[dbName].collection(table)
+        resFmt(
+          null,
+          await collection.updateMany(dataToUpdate, { $set: newData }),
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
       }
     }),
   singleQuery: (dbName, table, query, columnsToDecrypt, key, iv) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection.findOne(query, (err, result) =>
-            resFmt(
-              err,
-              result && !err && columnsToDecrypt && key && iv
-                ? decrypt([result], columnsToDecrypt, key, iv)[0]
-                : result,
-              resolve,
-              reject
-            )
-          )
+        const collection = await db.databaseList[dbName].collection(table)
+        const result = await collection.findOne(query)
+        resFmt(
+          null,
+          result && columnsToDecrypt && key && iv
+            ? decrypt([result], columnsToDecrypt, key, iv)[0]
+            : result,
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
       }
     }),
   query: (dbName, table, query, columnsToDecrypt, key, iv) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection
-            .find(query)
-            .toArray((err, result) =>
-              resFmt(
-                err,
-                result && result.length > 0 && columnsToDecrypt && key && iv
-                  ? decrypt(result, columnsToDecrypt, key, iv)
-                  : result,
-                resolve,
-                reject
-              )
-            )
+        const collection = await db.databaseList[dbName].collection(table)
+        const results = await collection.find(query)
+        const result = []
+        while (await results.hasNext()) {
+          result.push(await results.next())
+        }
+        resFmt(
+          null,
+          result && result.length > 0 && columnsToDecrypt && key && iv
+            ? decrypt(result, columnsToDecrypt, key, iv)
+            : result,
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
       }
     }),
   querySort: (dbName, table, sort, query, columnsToDecrypt, key, iv) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection
-            .find(query)
-            .sort(sort)
-            .toArray((err, result) =>
-              resFmt(
-                err,
-                result && result.length > 0 && columnsToDecrypt && key && iv
-                  ? decrypt(result, columnsToDecrypt, key, iv)
-                  : result,
-                resolve,
-                reject
-              )
-            )
+        const collection = await db.databaseList[dbName].collection(table)
+        const results = await (await collection.find(query)).sort(sort)
+        const result = []
+        while (await results.hasNext()) {
+          result.push(await results.next())
+        }
+        resFmt(
+          null,
+          result && result.length > 0 && columnsToDecrypt && key && iv
+            ? decrypt(result, columnsToDecrypt, key, iv)
+            : result,
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
@@ -188,23 +203,23 @@ const db = {
     key,
     iv
   ) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) =>
-          collection
-            .find(query)
-            .limit(max)
-            .sort(sort)
-            .toArray((err, result) =>
-              resFmt(
-                err,
-                result && result.length > 0 && columnsToDecrypt && key && iv
-                  ? decrypt(result, columnsToDecrypt, key, iv)
-                  : result,
-                resolve,
-                reject
-              )
-            )
+        const collection = await db.databaseList[dbName].collection(table)
+        const results = await (
+          await (await collection.find(query)).limit(max)
+        ).sort(sort)
+        const result = []
+        while (await results.hasNext()) {
+          result.push(await results.next())
+        }
+        resFmt(
+          null,
+          result && result.length > 0 && columnsToDecrypt && key && iv
+            ? decrypt(result, columnsToDecrypt, key, iv)
+            : result,
+          resolve,
+          reject
         )
       } else {
         reject('No Connection')
@@ -218,67 +233,116 @@ const db = {
     joinToIDField,
     joinedToElement,
     sort,
-    query
+    query,
+    columnsToDecrypt,
+    key,
+    iv
   ) =>
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.aggregate(dbName, table, query, sort, [
-          {
+        const collection = await db.databaseList[dbName].collection(table)
+        resolve(
+          await db.aggregate(
+            dbName,
+            table,
+            query,
+            sort,
+            [
+              {
+                $lookup: {
+                  from: joinTo,
+                  localField: tableIDField,
+                  foreignField: joinToIDField,
+                  as: joinedToElement,
+                },
+              },
+            ],
+            columnsToDecrypt,
+            key,
+            iv
+          )
+        )
+      } else {
+        reject('No Connection')
+      }
+    }),
+  joins: (
+    dbName,
+    table,
+    joinedToList,
+    sort,
+    query,
+    columnsToDecrypt,
+    key,
+    iv
+  ) =>
+    new Promise(async (resolve, reject) => {
+      if (db.databaseList[dbName]) {
+        const collection = await db.databaseList[dbName].collection(table)
+        let aggregrateList = []
+        for (let i = 0; i < joinedToList.length; i++) {
+          aggregrateList.push({
             $lookup: {
-              from: joinTo,
-              localField: tableIDField,
-              foreignField: joinToIDField,
-              as: joinedToElement
-            }
-          }
-        ])
-          .then(result => resolve(result))
-          .catch(err => reject(err))
+              from: joinedToList[i].to.name,
+              localField: joinedToList[i].from,
+              foreignField: joinedToList[i].to.id,
+              as: joinedToList[i].name,
+            },
+          })
+        }
+        resolve(
+          await db.aggregate(
+            dbName,
+            table,
+            query,
+            sort,
+            aggregrateList,
+            columnsToDecrypt,
+            key,
+            iv
+          )
+        )
       } else {
         reject('No Connection')
       }
     }),
-  joins: (dbName, table, joinedToList, sort, query) =>
-    new Promise((resolve, reject) => {
+  aggregate: (
+    dbName,
+    table,
+    query,
+    sort,
+    aggregates,
+    columnsToDecrypt,
+    key,
+    iv
+  ) =>
+    new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) => {
-          let aggregrateList = []
-          for (let i = 0; i < joinedToList.length; i++) {
-            aggregrateList.push({
-              $lookup: {
-                from: joinedToList[i].to.name,
-                localField: joinedToList[i].from,
-                foreignField: joinedToList[i].to.id,
-                as: joinedToList[i].name
-              }
-            })
-          }
-          db.aggregate(dbName, table, query, sort, aggregrateList)
-            .then(result => resolve(result))
-            .catch(err => reject(err))
-        })
+        const collection = await db.databaseList[dbName].collection(table)
+        if (query) {
+          aggregates.unshift({ $match: query })
+        }
+        if (sort) {
+          aggregates.push({ $sort: sort })
+        }
+        const result = []
+        const results = collection.aggregate(aggregates)
+        for await (const row of results) {
+          result.push(row)
+        }
+        console.log({ columnsToDecrypt, key, iv })
+        resFmt(
+          null,
+          columnsToDecrypt && columnsToDecrypt.length > 0 && key && iv
+            ? decrypt(result, columnsToDecrypt, key, iv)
+            : result,
+          resolve,
+          reject
+        )
       } else {
         reject('No Connection')
       }
     }),
-  aggregate: (dbName, table, query, sort, aggregates) =>
-    new Promise((resolve, reject) => {
-      if (db.databaseList[dbName]) {
-        db.databaseList[dbName].collection(table, (err, collection) => {
-          if (query) {
-            aggregates.unshift({ $match: query })
-          }
-          if (sort) {
-            aggregates.push({ $sort: sort })
-          }
-          collection
-            .aggregate(aggregates)
-            .toArray((err, result) => resFmt(err, result, resolve, reject))
-        })
-      } else {
-        reject('No Connection')
-      }
-    })
 }
 
 module.exports = db
