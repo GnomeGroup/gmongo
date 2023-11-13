@@ -214,7 +214,7 @@ Mongo.singleQuery(
   <Database Name>, //String
   <Collection Name>, //String
   <QUERY> //Object
-);.then( result => {} )
+).then( result => {} )
 ```
 
 Example:

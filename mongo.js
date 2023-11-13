@@ -330,7 +330,6 @@ const db = {
         for await (const row of results) {
           result.push(row)
         }
-        console.log({ columnsToDecrypt, key, iv })
         resFmt(
           null,
           columnsToDecrypt && columnsToDecrypt.length > 0 && key && iv

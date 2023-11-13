@@ -1,6 +1,6 @@
 {
   "name": "gmongo",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "MongoDB Connection Class",
   "main": "mongo.js",
   "scripts": {
