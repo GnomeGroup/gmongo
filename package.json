@@ -1,6 +1,6 @@
 {
   "name": "gmongo",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "MongoDB Connection Class",
   "main": "mongo.js",
   "scripts": {
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/GnomeGroup/gmongo#readme",
   "dependencies": {
+    "dotenv": "^17.3.1",
     "eslint": "^8.57.0",
     "mongodb": "^6.2.0",
     "prettier": "^3.2.5",

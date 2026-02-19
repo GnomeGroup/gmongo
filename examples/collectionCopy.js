@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config({ path: __dirname + '/.env' })
 const MGO = require('../mongo.js')
 
 function splitIntoBatches(array, batchSize) {
@@ -10,6 +10,12 @@ function splitIntoBatches(array, batchSize) {
 }
 
 async function copyCollections() {
+  // Validate required environment variables
+  if (!process.env.COLLECTIONS_TO_COPY) {
+    console.error('Error: COLLECTIONS_TO_COPY environment variable is required')
+    process.exit(1)
+  }
+
   const Source = {
     ATLAS: process.env.FROM_ATLAS === 'true',
     DB: process.env.FROM_DB,
@@ -31,6 +37,7 @@ async function copyCollections() {
   const timeoutInMS = parseInt(process.env.CONNECTION_TIMEOUT_MS) || 10000
   const insertBatchSize = parseInt(process.env.INSERT_BATCH_SIZE) || 1000
 
+  console.log('Connecting to source database...')
   await MGO.start(
     Source.ATLAS,
     Source.DB,
@@ -41,6 +48,9 @@ async function copyCollections() {
     Source.X509,
     timeoutInMS,
   )
+  console.log('✓ Connected to source database')
+
+  console.log('Connecting to destination database...')
   await MGO.start(
     Destination.ATLAS,
     Destination.DB,
@@ -51,24 +61,46 @@ async function copyCollections() {
     Destination.X509,
     timeoutInMS,
   )
+  console.log('✓ Connected to destination database')
 
   const CollectionsToCopy = process.env.COLLECTIONS_TO_COPY.split(',').map(
     (c) => c.trim(),
   )
 
+  console.log('Starting collection copy process...')
+  console.log(`Collections to copy: ${CollectionsToCopy.join(', ')}`)
+
+  let totalDocuments = 0
+
   try {
     for (const collectionName of CollectionsToCopy) {
+      console.log(`\nCopying collection: ${collectionName}`)
       const fromCollection = await MGO.query(Source.DB, collectionName, {})
-      const insertList = splitIntoBatches(fromCollection, insertBatchSize)
-      for (const batch of insertList) {
-        await MGO.insert(Destination.DB, collectionName, batch)
+      console.log(`  Found ${fromCollection.length} documents`)
+      
+      if (fromCollection.length === 0) {
+        console.log(`  Skipping empty collection`)
+        continue
       }
+      
+      const insertList = splitIntoBatches(fromCollection, insertBatchSize)
+      console.log(`  Inserting in ${insertList.length} batches...`)
+      
+      for (let i = 0; i < insertList.length; i++) {
+        await MGO.insert(Destination.DB, collectionName, insertList[i])
+        console.log(`  Batch ${i + 1}/${insertList.length} completed`)
+      }
+      
+      totalDocuments += fromCollection.length
       console.log(
-        `Copied collection: ${collectionName} with ${fromCollection.length} documents`,
+        `✓ Copied collection: ${collectionName} (${fromCollection.length} documents)`,
       )
     }
+    console.log(`\n✓ All collections copied successfully! (Total: ${totalDocuments} documents)`)
+    process.exit(0)
   } catch (error) {
-    console.error('Error copying collections:', error)
+    console.error('\n✗ Error copying collections:', error)
+    process.exit(1)
   }
 }
 
