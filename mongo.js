@@ -67,7 +67,7 @@ const db = {
                 rowOrRows[i][columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
                   key,
                   iv,
-                  rowOrRows[i][columsOfRowOrRowsToEncrypt[n]]
+                  rowOrRows[i][columsOfRowOrRowsToEncrypt[n]],
                 )
               }
             }
@@ -76,7 +76,7 @@ const db = {
               rowOrRows[columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
                 key,
                 iv,
-                rowOrRows[columsOfRowOrRowsToEncrypt[n]]
+                rowOrRows[columsOfRowOrRowsToEncrypt[n]],
               )
             }
           }
@@ -88,7 +88,7 @@ const db = {
             Array.isArray(rowOrRows) ? 'insertMany' : 'insertOne'
           ](rowOrRows),
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -110,7 +110,7 @@ const db = {
     newData,
     columsOfRowOrRowsToEncrypt,
     key,
-    iv
+    iv,
   ) =>
     new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
@@ -119,7 +119,7 @@ const db = {
             newData[columsOfRowOrRowsToEncrypt[n]] = aes.encrypt(
               key,
               iv,
-              newData[columsOfRowOrRowsToEncrypt[n]]
+              newData[columsOfRowOrRowsToEncrypt[n]],
             )
           }
         }
@@ -128,7 +128,7 @@ const db = {
           null,
           await collection.updateMany(dataToUpdate, { $set: newData }),
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -145,7 +145,7 @@ const db = {
             ? decrypt([result], columnsToDecrypt, key, iv)[0]
             : result,
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -166,7 +166,7 @@ const db = {
             ? decrypt(result, columnsToDecrypt, key, iv)
             : result,
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -187,7 +187,7 @@ const db = {
             ? decrypt(result, columnsToDecrypt, key, iv)
             : result,
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -201,7 +201,7 @@ const db = {
     query,
     columnsToDecrypt,
     key,
-    iv
+    iv,
   ) =>
     new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
@@ -219,7 +219,7 @@ const db = {
             ? decrypt(result, columnsToDecrypt, key, iv)
             : result,
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')
@@ -236,7 +236,7 @@ const db = {
     query,
     columnsToDecrypt,
     key,
-    iv
+    iv,
   ) =>
     new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
@@ -259,8 +259,8 @@ const db = {
             ],
             columnsToDecrypt,
             key,
-            iv
-          )
+            iv,
+          ),
         )
       } else {
         reject('No Connection')
@@ -274,7 +274,7 @@ const db = {
     query,
     columnsToDecrypt,
     key,
-    iv
+    iv,
   ) =>
     new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
@@ -299,8 +299,8 @@ const db = {
             aggregrateList,
             columnsToDecrypt,
             key,
-            iv
-          )
+            iv,
+          ),
         )
       } else {
         reject('No Connection')
@@ -314,7 +314,7 @@ const db = {
     aggregates,
     columnsToDecrypt,
     key,
-    iv
+    iv,
   ) =>
     new Promise(async (resolve, reject) => {
       if (db.databaseList[dbName]) {
@@ -336,7 +336,7 @@ const db = {
             ? decrypt(result, columnsToDecrypt, key, iv)
             : result,
           resolve,
-          reject
+          reject,
         )
       } else {
         reject('No Connection')

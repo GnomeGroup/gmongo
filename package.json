@@ -1,6 +1,6 @@
 {
   "name": "gmongo",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "MongoDB Connection Class",
   "main": "mongo.js",
   "scripts": {
@@ -17,9 +17,10 @@
   },
   "homepage": "https://github.com/GnomeGroup/gmongo#readme",
   "dependencies": {
-    "eslint": "^8.39.0",
+    "eslint": "^8.57.0",
     "mongodb": "^6.2.0",
-    "prettier": "^2.8.8"
+    "prettier": "^3.2.5",
+    "prettier-eslint": "^16.3.0"
   },
   "prettier": {
     "singleQuote": true,

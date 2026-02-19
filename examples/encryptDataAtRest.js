@@ -4,7 +4,7 @@ const keys = {
   test: {
     columns: ['name', 'dob'],
     key: MGO.aes.format.key(
-      '6233616364623234393935616165333332633466376134663031633833643262'
+      '6233616364623234393935616165333332633466376134663031633833643262',
     ),
     iv: MGO.aes.format.iv('62323166666532663034393535346233'),
   },
@@ -35,8 +35,8 @@ const start = async (_) => {
         data,
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
     console.log(data)
   }
@@ -45,7 +45,7 @@ const start = async (_) => {
     console.log(
       await MGO.delete(DBName, 'TestTable', {
         _id: MGO.id('655003e5d765319d61037ceb'),
-      })
+      }),
     )
   }
   if (false) {
@@ -60,8 +60,8 @@ const start = async (_) => {
         { test: 'My favourite data' },
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
   if (false) {
@@ -73,8 +73,8 @@ const start = async (_) => {
         {},
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
   if (false) {
@@ -88,8 +88,8 @@ const start = async (_) => {
         },
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
   if (false) {
@@ -102,8 +102,8 @@ const start = async (_) => {
         {},
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
   if (false) {
@@ -117,8 +117,8 @@ const start = async (_) => {
         {},
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
   if (false) {
@@ -135,8 +135,8 @@ const start = async (_) => {
         {},
         ['test'],
         keys.test.key,
-        keys.test.iv
-      )
+        keys.test.iv,
+      ),
     )
   }
 
